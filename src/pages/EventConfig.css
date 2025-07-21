@@ -3,30 +3,45 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 4rem;
   width: 100%;
   height: 100%;
+  padding: 1rem;
+  padding-bottom: 4rem;
+}
+
+.config-title, .start-button {
+  flex: 0;
 }
 
 .config-container {
-  display: flex;
-  gap: 2rem;
-  max-height: 60vh;
   flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-column-gap: 50px;
+  grid-row-gap: 0px;
+  width: 650px;
+  max-height: 70%;
 }
 
-.left-panel,
-.right-panel {
+.left-panel {
+  grid-area: 2 / 1 / 4 / 2;
   display: flex;
   flex-direction: column;
-  width: 300px;
+  gap: 1rem;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-  align-items: flex-start;
+.team-list-header {
+  grid-area: 1 / 2 / 2 / 3;
+}
+
+.team-list-container {
+  grid-area: 2 / 2 / 3 / 3;
+}
+
+.team-add {
+  grid-area: 3 / 2 / 4 / 3;
 }
 
 .team-header {
@@ -35,15 +50,17 @@
 }
 
 .team-list-container {
-  flex: 1;
   overflow-y: auto;
   margin-bottom: 0.5rem;
   border: 1px solid #ccc;
   padding: 0.5rem;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .team-list {
-  list-style: none;
   padding: 0;
   margin: 0;
 }
@@ -51,9 +68,5 @@
 .team-add {
   display: flex;
   gap: 0.5rem;
-}
-
-.start-button {
-  background-color: #a43523;
-  color: white;
+  margin-top: 0.5rem;
 }
