@@ -39,6 +39,7 @@ h1 {
   line-height: 1.1;
 }
 
+/* Button styles */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -48,11 +49,50 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s;
+  background-color: #fe1b00;
 }
+
 button:hover {
-  border-color: #646cff;
+  background-color: #fe1900d0;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+/* Input styles */
+input {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  background-color: white;
+  color: black;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 400;
+  font-family: inherit;
+  width: 100%;
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Title styles */
+h1, h2, h3, h4 {
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 2.5em;
+}
+
+h2 {
+  font-size: 2em;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+
+h4 {
+  font-size: 1.2em;
 }
