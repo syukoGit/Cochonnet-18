@@ -20,7 +20,7 @@ function EventConfig() {
       <div className="config-container">
         <div className="left-panel">
           <div className="field">
-            <label>Nom de l&apos;évènement</label>
+            <label>Nom de l'évènement</label>
             <input
               type="text"
               value={name}
