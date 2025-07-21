@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface EventState {
   name: string;
@@ -8,13 +8,13 @@ export interface EventState {
 }
 
 const initialState: EventState = {
-  name: '',
+  name: "",
   matches: 1,
   teams: [],
 };
 
 const eventSlice = createSlice({
-  name: 'event',
+  name: "event",
   initialState,
   reducers: {
     setName(state, action: PayloadAction<string>) {

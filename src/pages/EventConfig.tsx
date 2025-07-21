@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { addTeam, setMatches, setName } from '../store/eventSlice';
-import '../App.css';
+import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addTeam, setMatches, setName } from "../store/eventSlice";
+import "../App.css";
 
 function EventConfig() {
   const dispatch = useAppDispatch();
   const { name, matches, teams } = useAppSelector((state) => state.event);
-  const [newTeam, setNewTeam] = useState('');
+  const [newTeam, setNewTeam] = useState("");
 
   const handleAddTeam = () => {
     if (newTeam.trim()) {
       dispatch(addTeam(newTeam));
-      setNewTeam('');
+      setNewTeam("");
     }
   };
 
@@ -20,10 +20,11 @@ function EventConfig() {
       <div className="config-container">
         <div className="left-panel">
           <div className="field">
-            <label>Nom de l&apos;évènement</label>
+            <label>Nom de l'évènement</label>
             <input
               type="text"
               value={name}
+              placeholder="Nom de l'évènement"
               onChange={(e) => dispatch(setName(e.target.value))}
             />
           </div>
@@ -33,6 +34,7 @@ function EventConfig() {
               type="number"
               min={1}
               value={matches}
+              placeholder="Nombre de matchs"
               onChange={(e) => dispatch(setMatches(Number(e.target.value)))}
             />
           </div>

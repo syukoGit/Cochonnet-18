@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import Logo from '/logo.png';
-import '../App.css';
+import { Link } from "react-router-dom";
+import Logo from "/logo.png";
+import "../App.css";
 
 function Home() {
   return (
