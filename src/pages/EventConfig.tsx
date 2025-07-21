@@ -24,6 +24,7 @@ function EventConfig() {
             <input
               type="text"
               value={name}
+              placeholder="Nom de l'évènement"
               onChange={(e) => dispatch(setName(e.target.value))}
             />
           </div>
@@ -33,6 +34,7 @@ function EventConfig() {
               type="number"
               min={1}
               value={matches}
+              placeholder="Nombre de matchs"
               onChange={(e) => dispatch(setMatches(Number(e.target.value)))}
             />
           </div>
