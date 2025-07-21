@@ -29,7 +29,7 @@ function EventConfig() {
           />
           <FloatingLabelInput
             id="nb-matches"
-            label="Nombre de matchs"
+            label="Nombre de matchs par équipe"
             type="number"
             value={matches.toString()}
             onChange={(e) => dispatch(setMatches(Number(e.target.value)))}
