@@ -18,9 +18,15 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ccc;
   padding: 0.5rem;
+}
+
+tr {
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
 }
 
 
