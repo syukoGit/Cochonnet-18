@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useAppSelector } from '../store/hooks';
-import { generateBracket } from '../utils/phase2';
+import { generateBracket, getPlayedPairs } from '../utils/phase2';
 import type { BracketRound } from '../utils/phase2';
 import './Phase2.css';
 
 function Phase2() {
   const groups = useAppSelector((state) => state.event.phase2Groups);
+  const rounds = useAppSelector((state) => state.event.rounds);
   const [active, setActive] = useState<'winners' | 'consolation'>('winners');
   const [bracket, setBracket] = useState<BracketRound[]>(() => {
     if (!groups) return [];
-    return generateBracket(groups.winners);
+    const pairs = getPlayedPairs(rounds);
+    return generateBracket(groups.winners, pairs);
   });
 
   useEffect(() => {
     if (groups) {
-      setBracket(generateBracket(active === 'winners' ? groups.winners : groups.consolation));
+      const pairs = getPlayedPairs(rounds);
+      setBracket(
+        generateBracket(
+          active === 'winners' ? groups.winners : groups.consolation,
+          pairs
+        )
+      );
     }
-  }, [groups, active]);
+  }, [groups, active, rounds]);
 
   if (!groups) {
     return (

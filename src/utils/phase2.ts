@@ -34,17 +34,42 @@ export function splitPhase2Groups(
   return { winners, consolation };
 }
 
-export function generateBracket(teams: string[]): BracketRound[] {
-  let current = teams.slice();
-  const rounds: BracketRound[] = [];
+export function generateBracket(
+  teams: string[],
+  avoidPairs: Set<string> = new Set()
+): BracketRound[] {
+  const pairKey = (a: string, b: string) => [a, b].sort().join('|');
+
+  const remaining = teams.slice();
+  const firstRound: BracketMatch[] = [];
+
+  while (remaining.length > 0) {
+    const teamA = remaining.shift()!;
+    let teamB: string | undefined;
+    const idx = remaining.findIndex((t) => !avoidPairs.has(pairKey(teamA, t)));
+    if (idx !== -1) {
+      teamB = remaining.splice(idx, 1)[0];
+    } else {
+      teamB = remaining.shift();
+    }
+    const match: BracketMatch = { teamA, teamB };
+    if (!teamB) {
+      match.winner = teamA;
+    }
+    firstRound.push(match);
+  }
+
+  const rounds: BracketRound[] = [firstRound];
+  let current = firstRound.map((m) => m.winner ?? '');
+
   while (current.length > 1) {
     const round: BracketMatch[] = [];
     const next: string[] = [];
     for (let i = 0; i < current.length; i += 2) {
-      const teamA = current[i];
-      const teamB = current[i + 1];
+      const teamA = current[i] || undefined;
+      const teamB = current[i + 1] || undefined;
       const match: BracketMatch = { teamA, teamB };
-      if (!teamB) {
+      if (teamA && !teamB) {
         match.winner = teamA;
         next.push(teamA);
       } else {
@@ -55,5 +80,19 @@ export function generateBracket(teams: string[]): BracketRound[] {
     rounds.push(round);
     current = next;
   }
+
   return rounds;
+}
+
+import type { Round } from './schedule';
+
+export function getPlayedPairs(rounds: Round[]): Set<string> {
+  const pairs = new Set<string>();
+  const key = (a: string, b: string) => [a, b].sort().join('|');
+  for (const round of rounds) {
+    for (const { teamA, teamB } of round) {
+      pairs.add(key(teamA, teamB));
+    }
+  }
+  return pairs;
 }
