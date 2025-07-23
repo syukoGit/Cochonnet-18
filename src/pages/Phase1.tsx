@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setMatchScore } from '../store/eventSlice';
+import { setMatchScore, setPhase2Groups } from '../store/eventSlice';
 import { computeRanking } from '../utils/ranking';
+import { splitPhase2Groups } from '../utils/phase2';
 import './Phase1.css';
 
 function Phase1() {
@@ -208,7 +209,13 @@ function Phase1() {
         className="start-button"
         type="button"
         disabled={!allCompleted}
-        onClick={() => navigate('/phase2')}
+        onClick={() => {
+          const { winners, consolation } = splitPhase2Groups(
+            ranking.map((r) => r.team)
+          );
+          dispatch(setPhase2Groups({ winners, consolation }));
+          navigate('/phase2');
+        }}
       >
         Démarrer la phase 2
         <span className="progress-container">
