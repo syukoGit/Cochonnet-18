@@ -52,8 +52,12 @@ button {
   background-color: #fe1b00;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background-color: #fe1900d0;
+}
+
+button:disabled {
+  cursor: default;
 }
 
 /* Input styles */

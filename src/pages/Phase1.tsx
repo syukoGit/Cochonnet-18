@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setMatchScore } from '../store/eventSlice';
+import { setMatchScore, setPhase2Groups } from '../store/eventSlice';
 import { computeRanking } from '../utils/ranking';
+import { splitPhase2Groups } from '../utils/phase2';
 import './Phase1.css';
 
 function Phase1() {
   const dispatch = useAppDispatch();
   const { rounds, teams } = useAppSelector((state) => state.event);
   const [activeRound, setActiveRound] = useState(0);
+  const navigate = useNavigate();
 
   const ranking = useMemo(() => computeRanking(teams, rounds), [teams, rounds]);
   const roundProgress = useMemo(
@@ -19,6 +22,25 @@ function Phase1() {
         ).length;
         return total === 0 ? 0 : filled / total;
       }),
+    [rounds]
+  );
+
+  const totalProgress = useMemo(() => {
+    const totals = rounds.reduce(
+      (acc, round) => {
+        acc.total += round.length;
+        acc.filled += round.filter(
+          (m) => m.scoreA !== undefined && m.scoreB !== undefined
+        ).length;
+        return acc;
+      },
+      { total: 0, filled: 0 }
+    );
+    return totals.total === 0 ? 0 : totals.filled / totals.total;
+  }, [rounds]);
+
+  const allCompleted = useMemo(
+    () => rounds.every((r) => r.every((m) => m.scoreA !== undefined && m.scoreB !== undefined)),
     [rounds]
   );
 
@@ -183,6 +205,26 @@ function Phase1() {
           </div>
         </div>
       </div>
+      <button
+        className="start-button"
+        type="button"
+        disabled={!allCompleted}
+        onClick={() => {
+          const { winners, consolation } = splitPhase2Groups(
+            ranking.map((r) => r.team)
+          );
+          dispatch(setPhase2Groups({ winners, consolation }));
+          navigate('/phase2');
+        }}
+      >
+        Démarrer la phase 2
+        <span className="progress-container">
+          <span
+            className="progress-bar"
+            style={{ width: `${totalProgress * 100}%` }}
+          />
+        </span>
+      </button>
     </div>
   );
 }

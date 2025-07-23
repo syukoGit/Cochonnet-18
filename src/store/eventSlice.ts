@@ -7,6 +7,10 @@ export interface EventState {
   matches: number;
   teams: string[];
   rounds: Round[];
+  phase2Groups: {
+    winners: string[];
+    consolation: string[];
+  } | null;
 }
 
 const initialState: EventState = {
@@ -14,6 +18,7 @@ const initialState: EventState = {
   matches: 1,
   teams: [],
   rounds: [],
+  phase2Groups: null,
 };
 
 const eventSlice = createSlice({
@@ -51,9 +56,21 @@ const eventSlice = createSlice({
         match.scoreB = scoreB;
       }
     },
+    setPhase2Groups(
+      state,
+      action: PayloadAction<{ winners: string[]; consolation: string[] }>
+    ) {
+      state.phase2Groups = action.payload;
+    },
   },
 });
 
-export const { setName, setMatches, addTeam, setRounds, setMatchScore } =
-  eventSlice.actions;
+export const {
+  setName,
+  setMatches,
+  addTeam,
+  setRounds,
+  setMatchScore,
+  setPhase2Groups,
+} = eventSlice.actions;
 export default eventSlice.reducer;
