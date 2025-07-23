@@ -10,6 +10,9 @@
 .phase2-tabs {
   display: flex;
   gap: 0.5rem;
+  align-self: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .bracket-container {
