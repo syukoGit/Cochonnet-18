@@ -1,19 +1,73 @@
 .phase1-wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 5rem;
+  gap: 2rem;
+}
+
+.phase1-content {
+  flex: 1;
+  display: flex;
+  gap: 2rem;
+  overflow: hidden;
+  justify-content: center;
+}
+
+.ranking-panel,
+.matches-panel {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
   gap: 1rem;
+  max-width: 650px;
+}
+
+.ranking-scroll,
+.match-table-container {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
 }
 
 .tabs {
   display: flex;
   gap: 0.5rem;
+  overflow-x: auto;
+  width: 100%;
 }
 
 .active-tab {
   font-weight: bold;
-  text-decoration: underline;
   background-color: #fe1900d0;
   cursor: default;
+}
+
+.round-button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.progress-container {
+  position: relative;
+  width: 90%;
+  height: 2px;
+  background-color: lightgray;
+  margin-top: 2px;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: gray;
 }
 
 .phase1-table {
@@ -24,9 +78,20 @@
   white-space: nowrap;
 }
 
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  display: grid;
+  grid-template-columns: min-content auto min-content;
+  white-space: nowrap;
+}
+
 .phase1-table thead,
 .phase1-table tbody,
-.phase1-table tr {
+.phase1-table tr,
+.ranking-table thead,
+.ranking-table tbody,
+.ranking-table tr {
   display: contents;
 }
 
@@ -56,6 +121,13 @@ td.score-col {
   text-align: center;
 }
 
+.score-input::-webkit-inner-spin-button,
+.score-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
 .score-input:focus {
   outline: none;
 }
@@ -66,4 +138,17 @@ td.score-col {
 
 .loser {
   background-color: #f8d7da;
+}
+
+.ranking-panel h2,
+.matches-panel h2 {
+  width: 100%;
+  text-align: center;
+}
+
+.divider {
+  width: 1px;
+  background-color: lightgray;
+  height: 90%;
+  align-self: center;
 }
