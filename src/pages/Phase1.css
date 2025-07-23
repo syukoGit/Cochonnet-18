@@ -11,6 +11,9 @@
 
 .active-tab {
   font-weight: bold;
+  text-decoration: underline;
+  background-color: #fe1900d0;
+  cursor: default;
 }
 
 .phase1-table {
@@ -49,6 +52,12 @@ td.score-col {
   border-radius: 0;
   box-sizing: border-box;
   background: none;
+  height: 100%;
+  text-align: center;
+}
+
+.score-input:focus {
+  outline: none;
 }
 
 .winner {

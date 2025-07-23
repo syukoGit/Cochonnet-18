@@ -16,21 +16,26 @@ function Phase1() {
     roundIndex: number,
     matchIndex: number,
     field: 'scoreA' | 'scoreB',
-    value: string,
+    value: string
   ) => {
     const parsed = value === '' ? undefined : Number(value);
     const match = rounds[roundIndex][matchIndex];
     const updatedA = field === 'scoreA' ? parsed : match.scoreA;
     const updatedB = field === 'scoreB' ? parsed : match.scoreB;
     dispatch(
-      setMatchScore({ roundIndex, matchIndex, scoreA: updatedA, scoreB: updatedB }),
+      setMatchScore({
+        roundIndex,
+        matchIndex,
+        scoreA: updatedA,
+        scoreB: updatedB,
+      })
     );
   };
 
   const scoreClass = (
     a: number | undefined,
     b: number | undefined,
-    cell: 'A' | 'B',
+    cell: 'A' | 'B'
   ) => {
     if (a === undefined || b === undefined) return '';
     if (a === b) return '';
@@ -65,7 +70,13 @@ function Phase1() {
           {rounds[activeRound].map((match, idx) => (
             <tr key={idx}>
               <td>{match.teamA}</td>
-              <td className={`score-col ${scoreClass(match.scoreA, match.scoreB, 'A')}`}>
+              <td
+                className={`score-col ${scoreClass(
+                  match.scoreA,
+                  match.scoreB,
+                  'A'
+                )}`}
+              >
                 <input
                   className="score-input"
                   type="number"
@@ -73,11 +84,22 @@ function Phase1() {
                   title="Score équipe 1"
                   value={match.scoreA ?? ''}
                   onChange={(e) =>
-                    handleScoreChange(activeRound, idx, 'scoreA', e.target.value)
+                    handleScoreChange(
+                      activeRound,
+                      idx,
+                      'scoreA',
+                      e.target.value
+                    )
                   }
                 />
               </td>
-              <td className={`score-col ${scoreClass(match.scoreA, match.scoreB, 'B')}`}>
+              <td
+                className={`score-col ${scoreClass(
+                  match.scoreA,
+                  match.scoreB,
+                  'B'
+                )}`}
+              >
                 <input
                   className="score-input"
                   type="number"
@@ -85,7 +107,12 @@ function Phase1() {
                   title="Score équipe 2"
                   value={match.scoreB ?? ''}
                   onChange={(e) =>
-                    handleScoreChange(activeRound, idx, 'scoreB', e.target.value)
+                    handleScoreChange(
+                      activeRound,
+                      idx,
+                      'scoreB',
+                      e.target.value
+                    )
                   }
                 />
               </td>
