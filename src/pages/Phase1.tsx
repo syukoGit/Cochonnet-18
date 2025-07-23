@@ -52,7 +52,7 @@ function Phase1() {
           </button>
         ))}
       </div>
-      <table>
+      <table className="phase1-table">
         <thead>
           <tr>
             <th>Équipe 1</th>

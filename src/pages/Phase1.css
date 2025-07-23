@@ -13,9 +13,17 @@
   font-weight: bold;
 }
 
-table {
+.phase1-table {
   width: 100%;
   border-collapse: collapse;
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
+}
+
+.phase1-table thead,
+.phase1-table tbody,
+.phase1-table tr {
+  display: contents;
 }
 
 th,
@@ -23,12 +31,6 @@ td {
   border: 1px solid #ccc;
   padding: 0.5rem;
 }
-
-tr {
-  display: grid;
-  grid-template-columns: 1fr auto auto 1fr;
-}
-
 
 .score-col {
   width: auto;
