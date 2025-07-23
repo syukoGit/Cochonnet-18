@@ -152,3 +152,10 @@ td.score-col {
   height: 90%;
   align-self: center;
 }
+
+.start-button {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

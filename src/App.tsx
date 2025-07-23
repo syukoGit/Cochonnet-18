@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import EventConfig from './pages/EventConfig';
 import Phase1 from './pages/Phase1';
+import Phase2 from './pages/Phase2';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/config" element={<EventConfig />} />
         <Route path="/phase1" element={<Phase1 />} />
+        <Route path="/phase2" element={<Phase2 />} />
       </Routes>
     </Router>
   );

@@ -56,6 +56,10 @@ button:hover {
   background-color: #fe1900d0;
 }
 
+button:disabled {
+  cursor: default;
+}
+
 /* Input styles */
 input {
   border-radius: 8px;
