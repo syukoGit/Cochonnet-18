@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { addTeam, setMatches, setName } from '../store/eventSlice';
+import { addTeam, setMatches, setName, setRounds } from '../store/eventSlice';
+import { generateRounds } from '../utils/schedule';
+import { useNavigate } from 'react-router-dom';
 import './EventConfig.css';
 import FloatingLabelInput from '../components/FloatingLabelInput';
 
@@ -8,6 +10,7 @@ function EventConfig() {
   const dispatch = useAppDispatch();
   const { name, matches, teams } = useAppSelector((state) => state.event);
   const [newTeam, setNewTeam] = useState('');
+  const navigate = useNavigate();
 
   const handleAddTeam = () => {
     if (newTeam.trim()) {
@@ -57,7 +60,19 @@ function EventConfig() {
           </button>
         </div>
       </div>
-      <button className="start-button" type="button">
+      <button
+        className="start-button"
+        type="button"
+        onClick={() => {
+          const rounds = generateRounds(teams, matches);
+          if (!rounds) {
+            window.alert("Nombre de matchs trop élevé pour le nombre d'équipes");
+            return;
+          }
+          dispatch(setRounds(rounds));
+          navigate('/phase1');
+        }}
+      >
         Démarrer
       </button>
     </div>
