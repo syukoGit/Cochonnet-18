@@ -38,6 +38,8 @@ export interface BracketNode {
   teams: string[]; // 0..2
   left?: BracketNode;
   right?: BracketNode;
+  // optional consolation pair (two teams for the 3rd-place match)
+  consolation?: [string, string];
 }
 
 /**
@@ -104,7 +106,45 @@ export function generateBracketTree(teams: string[]): BracketNode | null {
   }
 
   // level[0] is the root node
-  return level[0] || null;
+  const root = level[0] || null;
+
+  // Prefer immediate children of the root as semifinal nodes (they represent the two halves).
+  if (root) {
+    let s1: BracketNode | undefined = undefined;
+    let s2: BracketNode | undefined = undefined;
+
+    if (root.left && root.right) {
+      s1 = root.left;
+      s2 = root.right;
+    } else {
+      // fallback: Detect semifinal nodes: nodes whose both children are leaves (no children of their own)
+      const semis: BracketNode[] = [];
+      function findSemis(n?: BracketNode) {
+        if (!n) return;
+        if (n.left && n.right) {
+          const l = n.left;
+          const r = n.right;
+          const leftIsLeaf = !l.left && !l.right;
+          const rightIsLeaf = !r.left && !r.right;
+          if (leftIsLeaf && rightIsLeaf) semis.push(n);
+        }
+        findSemis(n.left);
+        findSemis(n.right);
+      }
+      findSemis(root);
+      if (semis.length >= 2) {
+        s1 = semis[0];
+        s2 = semis[1];
+      }
+    }
+
+    // If we found two semifinal nodes, record their losers as the consolation match teams
+    if (s1 && s2) {
+      root.consolation = [`Loser of ${s1.id}`, `Loser of ${s2.id}`];
+    }
+  }
+
+  return root;
 }
 
 /**
@@ -153,5 +193,12 @@ export function visualizeBracket(root: BracketNode | null): string {
   }
 
   render(root, '', true);
+  // if there's a consolation subtree (3rd-place match), render it after the main tree
+  if (root && root.consolation) {
+    lines.push('');
+    lines.push('Consolation (3rd-place):');
+    const [t1, t2] = root.consolation;
+    lines.push(`  ${t1} vs ${t2}`);
+  }
   return lines.join('\n');
 }
