@@ -28,19 +28,6 @@ export function splitPhase2Groups(teams: string[]): {
   return { winners, consolation };
 }
 
-import type { Round } from './schedule';
-
-export function getPlayedPairs(rounds: Round[]): Set<string> {
-  const pairs = new Set<string>();
-  const key = (a: string, b: string) => [a, b].sort().join('|');
-  for (const round of rounds) {
-    for (const { teamA, teamB } of round) {
-      pairs.add(key(teamA, teamB));
-    }
-  }
-  return pairs;
-}
-
 /**
  * Tree node for the bracket.
  * - `teams` contains 0..2 teams (leaves contain the initial teams).
