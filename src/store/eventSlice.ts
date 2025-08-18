@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Round } from '../utils/schedule';
+import type { BracketNode } from '../utils/phase2';
 
 export interface EventState {
   name: string;
@@ -11,6 +12,11 @@ export interface EventState {
     winners: string[];
     consolation: string[];
   } | null;
+  // optional generated bracket trees for phase2 (winners and consolation)
+  phase2Brackets?: {
+    winners?: BracketNode | null;
+    consolation?: BracketNode | null;
+  } | null;
 }
 
 const initialState: EventState = {
@@ -19,6 +25,7 @@ const initialState: EventState = {
   teams: [],
   rounds: [],
   phase2Groups: null,
+  phase2Brackets: null,
 };
 
 const eventSlice = createSlice({
@@ -62,6 +69,15 @@ const eventSlice = createSlice({
     ) {
       state.phase2Groups = action.payload;
     },
+    setPhase2Brackets(
+      state,
+      action: PayloadAction<{
+        winners?: BracketNode | null;
+        consolation?: BracketNode | null;
+      }>
+    ) {
+      state.phase2Brackets = action.payload;
+    },
   },
 });
 
@@ -72,5 +88,6 @@ export const {
   setRounds,
   setMatchScore,
   setPhase2Groups,
+  setPhase2Brackets,
 } = eventSlice.actions;
 export default eventSlice.reducer;
