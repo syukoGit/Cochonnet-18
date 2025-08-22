@@ -3,6 +3,29 @@ Logiciel de gestion de tournoi de pétanque. Il permet d'organiser un événemen
 - Une phase de matchs aléatoires pour établir un classement initial
 - Deux tournois à élimination directe
 
+## Installation
+
+### Application de bureau (recommandé)
+L'application est disponible en tant qu'application de bureau pour tous les systèmes d'exploitation :
+
+- **Linux** : Téléchargez le fichier `.AppImage`
+- **Windows** : Téléchargez l'installateur `.exe`  
+- **macOS** : Téléchargez le fichier `.dmg`
+
+Consultez le fichier [INSTALLATION.md](INSTALLATION.md) pour les instructions détaillées.
+
+### Développement
+```bash
+# Installation des dépendances
+npm install
+
+# Lancement en mode développement
+npm run electron-dev
+
+# Construction des installateurs
+npm run dist
+```
+
 ## Règles
 - La première équipe atteignant 13 points remporte la partie
 - Aucun écart minimum n'est requis pour gagner : un score de 13-12 suffit pour l'emporter
