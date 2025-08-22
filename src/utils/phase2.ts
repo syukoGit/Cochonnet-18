@@ -1,16 +1,7 @@
-export interface BracketMatch {
-  teamA?: string;
-  teamB?: string;
-  scoreA?: number;
-  scoreB?: number;
-  winner?: string;
-}
-
-export type BracketRound = BracketMatch[];
-
-export function splitPhase2Groups(
-  teams: string[]
-): { winners: string[]; consolation: string[] } {
+export function splitPhase2Groups(teams: string[]): {
+  winners: string[];
+  consolation: string[];
+} {
   const n = teams.length;
   if (n === 0) return { winners: [], consolation: [] };
 
@@ -30,69 +21,219 @@ export function splitPhase2Groups(
   }
 
   const winners = teams.slice(0, winnersCount);
-  const consolation = teams.slice(winnersCount, winnersCount + consolationCount);
+  const consolation = teams.slice(
+    winnersCount,
+    winnersCount + consolationCount
+  );
   return { winners, consolation };
 }
 
-export function generateBracket(
-  teams: string[],
-  avoidPairs: Set<string> = new Set()
-): BracketRound[] {
-  const pairKey = (a: string, b: string) => [a, b].sort().join('|');
-
-  const remaining = teams.slice();
-  const firstRound: BracketMatch[] = [];
-
-  while (remaining.length > 0) {
-    const teamA = remaining.shift()!;
-    let teamB: string | undefined;
-    const idx = remaining.findIndex((t) => !avoidPairs.has(pairKey(teamA, t)));
-    if (idx !== -1) {
-      teamB = remaining.splice(idx, 1)[0];
-    } else {
-      teamB = remaining.shift();
-    }
-    const match: BracketMatch = { teamA, teamB };
-    if (!teamB) {
-      match.winner = teamA;
-    }
-    firstRound.push(match);
-  }
-
-  const rounds: BracketRound[] = [firstRound];
-  let current = firstRound.map((m) => m.winner ?? '');
-
-  while (current.length > 1) {
-    const round: BracketMatch[] = [];
-    const next: string[] = [];
-    for (let i = 0; i < current.length; i += 2) {
-      const teamA = current[i] || undefined;
-      const teamB = current[i + 1] || undefined;
-      const match: BracketMatch = { teamA, teamB };
-      if (teamA && !teamB) {
-        match.winner = teamA;
-        next.push(teamA);
-      } else {
-        next.push('');
-      }
-      round.push(match);
-    }
-    rounds.push(round);
-    current = next;
-  }
-
-  return rounds;
+/**
+ * Tree node for the bracket.
+ * - `teams` contains 0..2 teams (leaves contain the initial teams).
+ * - `left` and `right` are the children. `right` may be absent to handle odd cases.
+ */
+export interface BracketNode {
+  id: string;
+  teams: string[]; // 0..2
+  left?: BracketNode;
+  right?: BracketNode;
+  // index of the winning team within `teams` (0 or 1). Undefined when not set.
+  winnerIndex?: number;
+  // optional consolation pair (two teams for the 3rd-place match)
+  consolation?: BracketNode;
 }
 
-import type { Round } from './schedule';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isBracketNode(cell: any): cell is BracketNode {
+  return (
+    cell &&
+    typeof cell === 'object' &&
+    typeof cell.id === 'string' &&
+    'teams' in cell &&
+    Array.isArray(cell.teams)
+  );
+}
 
-export function getPlayedPairs(rounds: Round[]): Set<string> {
-  const pairs = new Set<string>();
-  const key = (a: string, b: string) => [a, b].sort().join('|');
-  for (const round of rounds) {
-    for (const { teamA, teamB } of round) {
-      pairs.add(key(teamA, teamB));
+export interface Connector {
+  length: number;
+  type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle' | 'Vertical';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isConnector(cell: any): cell is Connector {
+  return (
+    cell &&
+    typeof cell === 'object' &&
+    typeof cell.length === 'number' &&
+    (cell.type === 'UpToDown' ||
+      cell.type === 'DownToUp' ||
+      cell.type === 'UpDownToMiddle' ||
+      cell.type === 'Vertical')
+  );
+}
+
+/**
+ * Generates a binary bracket tree from a list of teams.
+ * Implemented rules:
+ * - Only a single root node is returned.
+ * - Parent nodes are created by grouping 2 child nodes.
+ * - Leaves contain up to 2 teams (pairs). If the number of teams is odd,
+ *   the leftover team is attached to the parent above.
+ * - If a level has an odd number of nodes, the last parent may have a single child (special case).
+ * - Branches can have different heights.
+ */
+export function generateBracketTree(teams: string[]): BracketNode | null {
+  if (!teams || teams.length === 0) return null;
+
+  // Create leaves: each leaf contains 2 teams; if there's a remaining team (odd),
+  // keep it in `leftoverTeam` to attach directly to the parent above.
+  const leaves: BracketNode[] = [];
+  let leftoverTeam: string | undefined = undefined;
+  let i = 0;
+  for (; i + 1 < teams.length; i += 2) {
+    leaves.push({ id: `n${leaves.length}`, teams: [teams[i], teams[i + 1]] });
+  }
+  if (i < teams.length) leftoverTeam = teams[i];
+
+  // If there is a leftover team and at least one leaf exists,
+  // attach this team into a parent node above the last leaf.
+  if (leftoverTeam !== undefined) {
+    if (leaves.length === 0) {
+      // Only case where there was a single team: return a root node with that team
+      return { id: `n0`, teams: [leftoverTeam] };
+    }
+    const lastLeaf = leaves.pop() as BracketNode;
+    const parent: BracketNode = {
+      id: `n${leaves.length + 1}`,
+      teams: [leftoverTeam],
+      right: lastLeaf,
+    };
+    leaves.push(parent);
+  }
+
+  // Build the tree upward by grouping 2 nodes into a parent (left->right).
+  let level = leaves;
+  let idCounter =
+    leftoverTeam !== undefined ? leaves.length + 1 : leaves.length;
+  while (level.length > 1) {
+    const nextLevel: BracketNode[] = [];
+    for (let j = 0; j < level.length; j += 2) {
+      const left = level[j];
+      const right = j + 1 < level.length ? level[j + 1] : undefined;
+      if (right) {
+        const parent: BracketNode = {
+          id: `n${idCounter++}`,
+          teams: [],
+          left,
+          right,
+        };
+        nextLevel.push(parent);
+      } else {
+        // carry over the unpaired node to next level
+        nextLevel.push(left);
+      }
+    }
+    level = nextLevel;
+  }
+
+  // level[0] is the root node
+  const root = level[0] || null;
+
+  // Prefer immediate children of the root as semifinal nodes (they represent the two halves).
+  if (root) {
+    let s1: BracketNode | undefined = undefined;
+    let s2: BracketNode | undefined = undefined;
+
+    if (root.left && root.right) {
+      s1 = root.left;
+      s2 = root.right;
+    } else {
+      // fallback: Detect semifinal nodes: nodes whose both children are leaves (no children of their own)
+      const semis: BracketNode[] = [];
+      function findSemis(n?: BracketNode) {
+        if (!n) return;
+        if (n.left && n.right) {
+          const l = n.left;
+          const r = n.right;
+          const leftIsLeaf = !l.left && !l.right;
+          const rightIsLeaf = !r.left && !r.right;
+          if (leftIsLeaf && rightIsLeaf) semis.push(n);
+        }
+        findSemis(n.left);
+        findSemis(n.right);
+      }
+      findSemis(root);
+      if (semis.length >= 2) {
+        s1 = semis[0];
+        s2 = semis[1];
+      }
+    }
+
+    // If we found two semifinal nodes, record their losers as the consolation match teams
+    if (s1 && s2) {
+      root.consolation = {
+        id: 'consolation',
+        teams: [],
+      };
     }
   }
-  return pairs;
+
+  return root;
+}
+
+/**
+ * Return an indented text visualization of the tree (multi-line).
+ * Example:
+ * n7 []
+ *   n3 []
+ *     n0 [A,B]
+ *     n1 [C,D]
+ *   n6 [E]
+ */
+export function visualizeBracket(root: BracketNode | null): string {
+  if (!root) return '(empty)';
+
+  const lines: string[] = [];
+
+  function nodeLabel(node: BracketNode) {
+    const teams =
+      node.teams && node.teams.length > 0 ? node.teams.join(',') : '';
+    return teams ? `${node.id} [${teams}]` : `${node.id}`;
+  }
+
+  // Pre-order rendering with ASCII connectors using dashes
+  function render(
+    node: BracketNode | undefined,
+    prefix = '',
+    isTail = true,
+    depth = 0
+  ) {
+    if (!node) return;
+    const label = nodeLabel(node);
+    // root (depth === 0) has no connector
+    const connector = depth === 0 ? '' : isTail ? '`-- ' : '|-- ';
+    lines.push(prefix + connector + label);
+
+    const children: BracketNode[] = [];
+    if (node.left) children.push(node.left);
+    if (node.right) children.push(node.right);
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const last = i === children.length - 1;
+      const newPrefix = prefix + (isTail ? '    ' : '|   ');
+      render(child, newPrefix, last, depth + 1);
+    }
+  }
+
+  render(root, '', true);
+  // if there's a consolation subtree (3rd-place match), render it after the main tree
+  if (root && root.consolation) {
+    lines.push('');
+    lines.push('Consolation (3rd-place):');
+    const [t1, t2] = root.consolation.teams;
+    lines.push(`  ${t1} vs ${t2}`);
+  }
+  return lines.join('\n');
 }

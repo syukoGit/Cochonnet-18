@@ -1,0 +1,30 @@
+.match-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+.match-card .team {
+  margin: 0;
+  padding: 4px 8px;
+}
+.match-card .team.clickable {
+  cursor: pointer;
+}
+.match-card .team.clickable:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.h-divider {
+  height: 1px;
+  background: #ddd;
+  margin: 2px 0;
+}
+
+.match-card .team.winner .team-name {
+  font-weight: 700;
+}
+
+.match-card .team .crown {
+  margin-right: 6px;
+  color: #f6c342; /* gold/yellow */
+}

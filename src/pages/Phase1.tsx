@@ -40,7 +40,10 @@ function Phase1() {
   }, [rounds]);
 
   const allCompleted = useMemo(
-    () => rounds.every((r) => r.every((m) => m.scoreA !== undefined && m.scoreB !== undefined)),
+    () =>
+      rounds.every((r) =>
+        r.every((m) => m.scoreA !== undefined && m.scoreB !== undefined)
+      ),
     [rounds]
   );
 
@@ -116,7 +119,7 @@ function Phase1() {
             </table>
           </div>
         </div>
-        <div className="divider" aria-hidden="true" />
+        <div className="v-divider" aria-hidden="true" />
         <div className="matches-panel">
           <h2>Matchs</h2>
           <div className="tabs">
@@ -125,7 +128,9 @@ function Phase1() {
                 type="button"
                 key={idx}
                 onClick={() => setActiveRound(idx)}
-                className={`${activeRound === idx ? 'active-tab' : ''} round-button`}
+                className={`${
+                  activeRound === idx ? 'active-tab' : ''
+                } round-button`}
               >
                 Round {idx + 1}
                 <span className="progress-container">

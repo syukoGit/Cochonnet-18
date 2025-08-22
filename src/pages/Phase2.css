@@ -23,40 +23,80 @@
   justify-content: center;
 }
 
-.round-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
+/* Table reset for bracket layout */
+.bracket-table {
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.bracket-table tr,
+.bracket-table tbody,
+.bracket-table thead {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure every cell has no padding/margin and a fixed size so empty cells match */
+.bracket-table td {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.bracket-table tr,
+.bracket-table td {
+  height: 80px;
 }
 
 .match-card {
-  border: 1px solid #ccc;
-  padding: 0.5rem;
+  /* light gray rounded bracket card */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
   background-color: white;
-  display: grid;
-  grid-template-columns: auto min-content;
-  grid-template-rows: auto auto auto;
-  gap: 0.25rem;
-  min-width: 160px;
+  display: flex;
+  flex-direction: column; /* teams stacked vertically */
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 160px;
+  height: 80px;
 }
 
-.team-row {
-  display: contents;
+.match-card p {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  align-content: center;
 }
 
-.team-row span {
-  margin-right: 0.5rem;
+.connector {
+  width: 40px;
 }
 
-.winner-display {
-  grid-column: 1 / span 2;
-  text-align: center;
-  font-weight: bold;
+.bracket-table td > * {
+  height: 100%;
+}
+
+.bracket-table td > .connector {
+  margin: 0 auto;
+  display: block;
 }
 
 .active-tab {
   font-weight: bold;
   background-color: #fe1900d0;
   cursor: default;
+}
+
+.stroke {
+  stroke: #000;
+  stroke-width: 2;
+  fill: none;
+}
+
+.h-divider {
+  width: 100%;
 }
