@@ -43,7 +43,6 @@
   padding: 0;
   margin: 0;
   border: none;
-  vertical-align: middle;
 }
 
 .bracket-table tr,
@@ -75,6 +74,15 @@
 
 .connector {
   width: 40px;
+}
+
+.bracket-table td > * {
+  height: 100%;
+}
+
+.bracket-table td > .connector {
+  margin: 0 auto;
+  display: block;
 }
 
 .active-tab {

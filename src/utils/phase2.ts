@@ -38,8 +38,10 @@ export interface BracketNode {
   teams: string[]; // 0..2
   left?: BracketNode;
   right?: BracketNode;
+  // index of the winning team within `teams` (0 or 1). Undefined when not set.
+  winnerIndex?: number;
   // optional consolation pair (two teams for the 3rd-place match)
-  consolation?: [string, string];
+  consolation?: BracketNode;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,7 +57,7 @@ export function isBracketNode(cell: any): cell is BracketNode {
 
 export interface Connector {
   length: number;
-  type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle';
+  type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle' | 'Vertical';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +68,8 @@ export function isConnector(cell: any): cell is Connector {
     typeof cell.length === 'number' &&
     (cell.type === 'UpToDown' ||
       cell.type === 'DownToUp' ||
-      cell.type === 'UpDownToMiddle')
+      cell.type === 'UpDownToMiddle' ||
+      cell.type === 'Vertical')
   );
 }
 
@@ -104,14 +107,15 @@ export function generateBracketTree(teams: string[]): BracketNode | null {
     const parent: BracketNode = {
       id: `n${leaves.length + 1}`,
       teams: [leftoverTeam],
-      left: lastLeaf,
+      right: lastLeaf,
     };
     leaves.push(parent);
   }
 
   // Build the tree upward by grouping 2 nodes into a parent (left->right).
   let level = leaves;
-  let idCounter = leaves.length;
+  let idCounter =
+    leftoverTeam !== undefined ? leaves.length + 1 : leaves.length;
   while (level.length > 1) {
     const nextLevel: BracketNode[] = [];
     for (let j = 0; j < level.length; j += 2) {
@@ -168,7 +172,10 @@ export function generateBracketTree(teams: string[]): BracketNode | null {
 
     // If we found two semifinal nodes, record their losers as the consolation match teams
     if (s1 && s2) {
-      root.consolation = [`Loser of ${s1.id}`, `Loser of ${s2.id}`];
+      root.consolation = {
+        id: 'consolation',
+        teams: [],
+      };
     }
   }
 
@@ -225,7 +232,7 @@ export function visualizeBracket(root: BracketNode | null): string {
   if (root && root.consolation) {
     lines.push('');
     lines.push('Consolation (3rd-place):');
-    const [t1, t2] = root.consolation;
+    const [t1, t2] = root.consolation.teams;
     lines.push(`  ${t1} vs ${t2}`);
   }
   return lines.join('\n');

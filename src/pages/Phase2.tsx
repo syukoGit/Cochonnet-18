@@ -1,36 +1,23 @@
 import { useAppSelector } from '../store/hooks';
 import { useState } from 'react';
-import {
-  generateBracketTree,
-  isBracketNode,
-  isConnector,
-} from '../utils/phase2';
+import { isBracketNode, isConnector } from '../utils/phase2';
 import type { BracketNode, Connector } from '../utils/phase2';
 import './Phase2.css';
 import ConnectorUpToDown from '../components/bracket-diagram/ConnectorUpToDown';
 import ConnectorDownToUp from '../components/bracket-diagram/ConnectorDownToUp';
 import ConnectorUpDownToMiddle from '../components/bracket-diagram/ConnectorUpDownToMiddle';
+import MatchCard from '../components/bracket-diagram/MatchCard';
+import ConnectorV from '../components/bracket-diagram/ConnectorV';
 
 function Phase2() {
-  const groups = useAppSelector((state) => state.event.phase2Groups);
   const phase2Brackets = useAppSelector((state) => state.event.phase2Brackets);
   const [active, setActive] = useState<'winners' | 'consolation'>('winners');
 
-  if (!groups) {
-    return (
-      <div className="phase2-wrapper">
-        <h1>Phase 2</h1>
-        <p>Aucune donnée</p>
-      </div>
-    );
-  }
-
-  // Prepare both trees (use store values if present, fallback to generation)
-  const winnersTree: BracketNode | null =
-    phase2Brackets?.winners ?? generateBracketTree(groups.winners || []);
+  // Prepare both trees (use store values if present). Trees are pre-generated
+  // when `setPhase2Groups` is called in the store; do not generate here.
+  const winnersTree: BracketNode | null = phase2Brackets?.winners ?? null;
   const consolationTree: BracketNode | null =
-    phase2Brackets?.consolation ??
-    generateBracketTree(groups.consolation || []);
+    phase2Brackets?.consolation ?? null;
 
   const activeTree: BracketNode | null =
     active === 'winners' ? winnersTree : consolationTree;
@@ -51,7 +38,7 @@ function Phase2() {
   function setConnectorPosition(
     nodePos: { x: number; y: number },
     parentPos: { x: number; y: number },
-    type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle'
+    type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle' | 'Vertical'
   ) {
     let x;
     let y;
@@ -59,12 +46,16 @@ function Phase2() {
     if (type === 'DownToUp') {
       x = parentPos.x - 1;
       y = parentPos.y;
+    } else if (type === 'Vertical') {
+      x = nodePos.x;
+      y = (nodePos.y < parentPos.y ? nodePos.y : parentPos.y) + 1;
     } else {
       x = nodePos.x + 1;
       y = nodePos.y;
     }
 
-    let length = Math.abs(nodePos.y - parentPos.y) + 1;
+    let length =
+      Math.abs(nodePos.y - parentPos.y) + (type === 'Vertical' ? -1 : 1);
 
     if (type === 'UpDownToMiddle') length = length * 2 - 1;
 
@@ -138,11 +129,25 @@ function Phase2() {
 
     if (leftPos && rightPos) {
       setConnectorPosition(leftPos, { x, y }, 'UpDownToMiddle');
+
+      if (activeTree.consolation) {
+        grid[y][x - 2] = activeTree.consolation;
+
+        setConnectorPosition(leftPos, { x, y }, 'Vertical');
+        setConnectorPosition(rightPos, { x, y }, 'Vertical');
+      }
     } else if (leftPos) {
       setConnectorPosition(leftPos, { x, y }, 'UpToDown');
     } else if (rightPos) {
       setConnectorPosition(rightPos, { x, y }, 'DownToUp');
     }
+  } else {
+    return (
+      <div className="phase2-wrapper">
+        <h1>Phase 2</h1>
+        <p>Aucune donnée</p>
+      </div>
+    );
   }
 
   for (let y = 0; y < grid.length; y++) {
@@ -187,11 +192,7 @@ function Phase2() {
                 {row.map((cell, x) =>
                   isBracketNode(cell) ? (
                     <td key={`c-${y}-${x}`}>
-                      <div className="match-card">
-                        <p>{cell.teams ? cell.teams[0] : ''}</p>
-                        <div className="h-divider" />
-                        <p>{cell.teams ? cell.teams[1] : ''}</p>
-                      </div>
+                      <MatchCard node={cell} tree={active} />
                     </td>
                   ) : isConnector(cell) ? (
                     <td key={`c-${y}-${x}`} rowSpan={cell.length}>
@@ -205,6 +206,8 @@ function Phase2() {
                             return (
                               <ConnectorUpDownToMiddle length={cell.length} />
                             );
+                          case 'Vertical':
+                            return <ConnectorV length={cell.length} />;
                           default:
                             return null;
                         }

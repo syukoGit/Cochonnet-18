@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Round } from '../utils/schedule';
 import type { BracketNode } from '../utils/phase2';
+import { generateBracketTree } from '../utils/phase2';
 
 export interface EventState {
   name: string;
@@ -68,6 +69,13 @@ const eventSlice = createSlice({
       action: PayloadAction<{ winners: string[]; consolation: string[] }>
     ) {
       state.phase2Groups = action.payload;
+      // Pre-generate bracket trees for both winners and consolation so the UI
+      // doesn't need to compute them on render. This keeps Phase2 page purely
+      // presentational regarding tree generation.
+      state.phase2Brackets = {
+        winners: generateBracketTree(action.payload.winners || []),
+        consolation: generateBracketTree(action.payload.consolation || []),
+      };
     },
     setPhase2Brackets(
       state,
@@ -77,6 +85,81 @@ const eventSlice = createSlice({
       }>
     ) {
       state.phase2Brackets = action.payload;
+    },
+    setPhase2Winner(
+      state,
+      action: PayloadAction<{
+        nodeId: string;
+        winnerIndex: number;
+        tree: 'winners' | 'consolation';
+      }>
+    ) {
+      const payload = action.payload;
+      if (!state.phase2Brackets) return;
+
+      const applyWinner = (node?: BracketNode): number | undefined => {
+        if (!node) return undefined;
+        if (node.id === payload.nodeId) {
+          // only set if there are exactly 2 teams
+          if (node.teams && node.teams.length === 2) {
+            node.winnerIndex = payload.winnerIndex;
+            return payload.winnerIndex;
+          }
+          return undefined;
+        }
+
+        if (node.consolation) {
+          applyWinner(node.consolation);
+        }
+
+        // recurse
+        const leftWinnerIndex = applyWinner(node.left);
+        const rightWinnerIndex = applyWinner(node.right);
+
+        // If a child returned a winner string, place it into this node's teams
+        if (leftWinnerIndex !== undefined || rightWinnerIndex !== undefined) {
+          // initialize teams to 0..2 if unset
+          const t: string[] = node.teams ? [...node.teams] : [];
+
+          if (node.left && leftWinnerIndex !== undefined) {
+            // left child winner should occupy the 0 position
+            t[0] = node.left.teams[leftWinnerIndex];
+
+            if (node.consolation) {
+              node.consolation.teams[0] =
+                node.left.teams[leftWinnerIndex == 1 ? 0 : 1];
+            }
+          }
+          if (node.right && rightWinnerIndex !== undefined) {
+            // right child winner should occupy the 1 position
+            t[1] = node.right.teams[rightWinnerIndex];
+
+            if (node.consolation) {
+              node.consolation.teams[1] =
+                node.right.teams[rightWinnerIndex == 1 ? 0 : 1];
+            }
+          }
+          node.teams = t;
+          // if both teams present and winnerIndex already set, return the winner
+          if (node.teams.length === 2 && node.winnerIndex !== undefined) {
+            return node.winnerIndex;
+          }
+          return undefined;
+        }
+
+        return undefined;
+      };
+
+      // If a tree is specified, only update that one. Otherwise attempt both.
+      if (payload.tree === 'winners') {
+        if (state.phase2Brackets.winners)
+          applyWinner(state.phase2Brackets.winners);
+      } else if (payload.tree === 'consolation') {
+        if (state.phase2Brackets.consolation)
+          applyWinner(state.phase2Brackets.consolation);
+      } else {
+        return undefined;
+      }
     },
   },
 });
@@ -89,5 +172,6 @@ export const {
   setMatchScore,
   setPhase2Groups,
   setPhase2Brackets,
+  setPhase2Winner,
 } = eventSlice.actions;
 export default eventSlice.reducer;
