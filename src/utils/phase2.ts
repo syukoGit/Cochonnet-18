@@ -42,6 +42,34 @@ export interface BracketNode {
   consolation?: [string, string];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isBracketNode(cell: any): cell is BracketNode {
+  return (
+    cell &&
+    typeof cell === 'object' &&
+    typeof cell.id === 'string' &&
+    'teams' in cell &&
+    Array.isArray(cell.teams)
+  );
+}
+
+export interface Connector {
+  length: number;
+  type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isConnector(cell: any): cell is Connector {
+  return (
+    cell &&
+    typeof cell === 'object' &&
+    typeof cell.length === 'number' &&
+    (cell.type === 'UpToDown' ||
+      cell.type === 'DownToUp' ||
+      cell.type === 'UpDownToMiddle')
+  );
+}
+
 /**
  * Generates a binary bracket tree from a list of teams.
  * Implemented rules:
@@ -74,7 +102,7 @@ export function generateBracketTree(teams: string[]): BracketNode | null {
     }
     const lastLeaf = leaves.pop() as BracketNode;
     const parent: BracketNode = {
-      id: `n${leaves.length}`,
+      id: `n${leaves.length + 1}`,
       teams: [leftoverTeam],
       left: lastLeaf,
     };

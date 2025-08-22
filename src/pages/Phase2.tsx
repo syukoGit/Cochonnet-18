@@ -1,8 +1,15 @@
 import { useAppSelector } from '../store/hooks';
 import { useState } from 'react';
-import { generateBracketTree } from '../utils/phase2';
-import type { BracketNode } from '../utils/phase2';
+import {
+  generateBracketTree,
+  isBracketNode,
+  isConnector,
+} from '../utils/phase2';
+import type { BracketNode, Connector } from '../utils/phase2';
 import './Phase2.css';
+import ConnectorUpToDown from '../components/bracket-diagram/ConnectorUpToDown';
+import ConnectorDownToUp from '../components/bracket-diagram/ConnectorDownToUp';
+import ConnectorUpDownToMiddle from '../components/bracket-diagram/ConnectorUpDownToMiddle';
 
 function Phase2() {
   const groups = useAppSelector((state) => state.event.phase2Groups);
@@ -28,7 +35,9 @@ function Phase2() {
   const activeTree: BracketNode | null =
     active === 'winners' ? winnersTree : consolationTree;
 
-  const grid = new Array<Array<BracketNode | null>>();
+  const grid = new Array<
+    Array<BracketNode | Connector | null | 'Connector expansion'>
+  >();
 
   const getMaxDepth = (node: BracketNode, depth: number): number => {
     const leftNode = node.left ? getMaxDepth(node.left, depth + 1) : 0;
@@ -38,38 +47,110 @@ function Phase2() {
   };
 
   const maxDepth = activeTree ? getMaxDepth(activeTree, 0) : 0;
-  let minX = 0;
-  let minY = 0;
 
-  function setNodePosition(node: BracketNode, depth: number) {
-    const x = maxDepth - depth;
-    const i = grid.map((row) => row[x]).filter((cell) => cell).length || 0;
+  function setConnectorPosition(
+    nodePos: { x: number; y: number },
+    parentPos: { x: number; y: number },
+    type: 'UpToDown' | 'DownToUp' | 'UpDownToMiddle'
+  ) {
+    let x;
+    let y;
+
+    if (type === 'DownToUp') {
+      x = parentPos.x - 1;
+      y = parentPos.y;
+    } else {
+      x = nodePos.x + 1;
+      y = nodePos.y;
+    }
+
+    let length = Math.abs(nodePos.y - parentPos.y) + 1;
+
+    if (type === 'UpDownToMiddle') length = length * 2 - 1;
+
+    grid[y][x] = {
+      length,
+      type,
+    };
+
+    for (let i = 1; i < length; i++) {
+      if (!grid[y + i]) {
+        grid[y + i] = [];
+      }
+
+      grid[y + i][x] = 'Connector expansion';
+    }
+  }
+
+  function setNodePosition(
+    node: BracketNode,
+    depth: number,
+    parentPos: { x: number; y: number },
+    branch: 'left' | 'right'
+  ): { x: number; y: number } {
+    const x = parentPos.x - 2;
     const y =
-      Math.pow(2, maxDepth - depth) - 1 + Math.pow(2, maxDepth - depth + 1) * i;
-
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
+      branch === 'left'
+        ? parentPos.y - Math.pow(2, maxDepth - depth)
+        : parentPos.y + Math.pow(2, maxDepth - depth);
 
     if (!grid[y]) {
-      grid[y] = new Array<BracketNode | null>();
+      grid[y] = new Array<
+        BracketNode | Connector | null | 'Connector expansion'
+      >();
     }
 
     grid[y][x] = node;
 
-    if (node.left) setNodePosition(node.left, depth + 1);
-    if (node.right) setNodePosition(node.right, depth + 1);
+    const leftPos =
+      node.left && setNodePosition(node.left, depth + 1, { x, y }, 'left');
+    const rightPos =
+      node.right && setNodePosition(node.right, depth + 1, { x, y }, 'right');
+
+    if (leftPos && rightPos) {
+      setConnectorPosition(leftPos, { x, y }, 'UpDownToMiddle');
+    } else if (leftPos) {
+      setConnectorPosition(leftPos, { x, y }, 'UpToDown');
+    } else if (rightPos) {
+      setConnectorPosition(rightPos, { x, y }, 'DownToUp');
+    }
+
+    return { x, y };
   }
 
   if (activeTree) {
-    setNodePosition(activeTree, 0);
+    const x = maxDepth * 2;
+    const y = Math.pow(2, maxDepth) - 1;
+
+    if (!grid[y]) {
+      grid[y] = new Array<
+        BracketNode | Connector | null | 'Connector expansion'
+      >();
+    }
+
+    grid[y][x] = activeTree;
+
+    const leftPos =
+      activeTree.left && setNodePosition(activeTree.left, 1, { x, y }, 'left');
+    const rightPos =
+      activeTree.right &&
+      setNodePosition(activeTree.right, 1, { x, y }, 'right');
+
+    if (leftPos && rightPos) {
+      setConnectorPosition(leftPos, { x, y }, 'UpDownToMiddle');
+    } else if (leftPos) {
+      setConnectorPosition(leftPos, { x, y }, 'UpToDown');
+    } else if (rightPos) {
+      setConnectorPosition(rightPos, { x, y }, 'DownToUp');
+    }
   }
 
-  for (let y = minY; y < grid.length; y++) {
+  for (let y = 0; y < grid.length; y++) {
     if (!grid[y]) {
       grid[y] = [];
     }
 
-    for (let x = minX; x < grid[y].length; x++) {
+    for (let x = 0; x < grid[y].length; x++) {
       if (grid[y][x] === undefined) {
         grid[y][x] = null;
       }
@@ -103,17 +184,37 @@ function Phase2() {
           <tbody>
             {grid.map((row, y) => (
               <tr key={`r-${y}`}>
-                {row.map((cell, x) => (
-                  <td key={`c-${y}-${x}`}>
-                    {cell ? (
+                {row.map((cell, x) =>
+                  isBracketNode(cell) ? (
+                    <td key={`c-${y}-${x}`}>
                       <div className="match-card">
-                        {cell.teams.map((team) => (
-                          <p>{team}</p>
-                        ))}
+                        <p>{cell.teams ? cell.teams[0] : ''}</p>
+                        <p>{cell.teams ? cell.teams[1] : ''}</p>
                       </div>
-                    ) : null}
-                  </td>
-                ))}
+                    </td>
+                  ) : isConnector(cell) ? (
+                    <td key={`c-${y}-${x}`} rowSpan={cell.length}>
+                      {(() => {
+                        switch (cell.type) {
+                          case 'UpToDown':
+                            return <ConnectorUpToDown length={cell.length} />;
+                          case 'DownToUp':
+                            return <ConnectorDownToUp length={cell.length} />;
+                          case 'UpDownToMiddle':
+                            return (
+                              <ConnectorUpDownToMiddle length={cell.length} />
+                            );
+                          default:
+                            return null;
+                        }
+                      })()}
+                    </td>
+                  ) : cell === null ? (
+                    <td key={`c-${y}-${x}`} />
+                  ) : (
+                    <></>
+                  )
+                )}
               </tr>
             ))}
           </tbody>
