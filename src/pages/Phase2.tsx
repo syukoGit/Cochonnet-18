@@ -212,9 +212,7 @@ function Phase2() {
                     </td>
                   ) : cell === null ? (
                     <td key={`c-${y}-${x}`} />
-                  ) : (
-                    <></>
-                  )
+                  ) : null
                 )}
               </tr>
             ))}
