@@ -127,7 +127,6 @@ td.score-col {
   margin: 0;
 }
 
-
 .score-input:focus {
   outline: none;
 }
@@ -146,11 +145,8 @@ td.score-col {
   text-align: center;
 }
 
-.divider {
-  width: 1px;
-  background-color: lightgray;
+.v-divider {
   height: 90%;
-  align-self: center;
 }
 
 .start-button {

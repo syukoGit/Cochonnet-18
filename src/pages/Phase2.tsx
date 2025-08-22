@@ -189,6 +189,7 @@ function Phase2() {
                     <td key={`c-${y}-${x}`}>
                       <div className="match-card">
                         <p>{cell.teams ? cell.teams[0] : ''}</p>
+                        <div className="h-divider" />
                         <p>{cell.teams ? cell.teams[1] : ''}</p>
                       </div>
                     </td>
