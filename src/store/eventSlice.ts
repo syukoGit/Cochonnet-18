@@ -136,7 +136,7 @@ const eventSlice = createSlice({
 
             if (node.consolation) {
               node.consolation.teams[1] =
-                node.right.teams[rightWinnerIndex == 1 ? 0 : 1];
+                node.right.teams[rightWinnerIndex === 1 ? 0 : 1];
             }
           }
           node.teams = t;
