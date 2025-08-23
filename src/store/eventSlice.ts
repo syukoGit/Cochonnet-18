@@ -4,10 +4,15 @@ import type { Round } from '../utils/schedule';
 import type { BracketNode } from '../utils/phase2';
 import { generateBracketTree } from '../utils/phase2';
 
+export interface Team {
+  id: number;
+  name: string;
+}
+
 export interface EventState {
   name: string;
   matches: number;
-  teams: string[];
+  teams: Team[];
   rounds: Round[];
   phase2Groups: {
     winners: string[];
@@ -40,9 +45,10 @@ const eventSlice = createSlice({
       state.matches = action.payload;
     },
     addTeam(state, action: PayloadAction<string>) {
-      const team = action.payload.trim();
-      if (team && !state.teams.includes(team)) {
-        state.teams.push(team);
+      const teamName = action.payload.trim();
+      if (teamName && !state.teams.some(team => team.name === teamName)) {
+        const nextId = state.teams.length > 0 ? Math.max(...state.teams.map(team => team.id)) + 1 : 1;
+        state.teams.push({ id: nextId, name: teamName });
       }
     },
     setRounds(state, action: PayloadAction<Round[]>) {

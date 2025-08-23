@@ -42,7 +42,7 @@ function EventConfig() {
         <div className="team-list-container">
           <ul className="team-list">
             {teams.map((team) => (
-              <li key={team}>{team}</li>
+              <li key={team.id}>{team.id} - {team.name}</li>
             ))}
           </ul>
         </div>
@@ -64,7 +64,7 @@ function EventConfig() {
         className="start-button"
         type="button"
         onClick={() => {
-          const rounds = generateRounds(teams, matches);
+          const rounds = generateRounds(teams.map(team => team.name), matches);
           if (!rounds) {
             window.alert("Nombre de matchs trop élevé pour le nombre d'équipes");
             return;
