@@ -11,6 +11,7 @@ import ConnectorV from '../components/bracket-diagram/ConnectorV';
 
 function Phase2() {
   const phase2Brackets = useAppSelector((state) => state.event.phase2Brackets);
+  const teams = useAppSelector((state) => state.event.teams);
   const [active, setActive] = useState<'winners' | 'consolation'>('winners');
 
   // Prepare both trees (use store values if present). Trees are pre-generated
@@ -192,7 +193,7 @@ function Phase2() {
                 {row.map((cell, x) =>
                   isBracketNode(cell) ? (
                     <td key={`c-${y}-${x}`}>
-                      <MatchCard node={cell} tree={active} />
+                      <MatchCard node={cell} tree={active} teams={teams} />
                     </td>
                   ) : isConnector(cell) ? (
                     <td key={`c-${y}-${x}`} rowSpan={cell.length}>

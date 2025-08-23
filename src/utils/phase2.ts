@@ -1,8 +1,8 @@
-export function splitPhase2Groups(teams: string[]): {
-  winners: string[];
-  consolation: string[];
+export function splitPhase2Groups(teamIds: number[]): {
+  winners: number[];
+  consolation: number[];
 } {
-  const n = teams.length;
+  const n = teamIds.length;
   if (n === 0) return { winners: [], consolation: [] };
 
   let winnersCount: number;
@@ -20,8 +20,8 @@ export function splitPhase2Groups(teams: string[]): {
     }
   }
 
-  const winners = teams.slice(0, winnersCount);
-  const consolation = teams.slice(
+  const winners = teamIds.slice(0, winnersCount);
+  const consolation = teamIds.slice(
     winnersCount,
     winnersCount + consolationCount
   );
@@ -35,7 +35,7 @@ export function splitPhase2Groups(teams: string[]): {
  */
 export interface BracketNode {
   id: string;
-  teams: string[]; // 0..2
+  teams: number[]; // team IDs (0..2)
   left?: BracketNode;
   right?: BracketNode;
   // index of the winning team within `teams` (0 or 1). Undefined when not set.
@@ -83,18 +83,18 @@ export function isConnector(cell: any): cell is Connector {
  * - If a level has an odd number of nodes, the last parent may have a single child (special case).
  * - Branches can have different heights.
  */
-export function generateBracketTree(teams: string[]): BracketNode | null {
-  if (!teams || teams.length === 0) return null;
+export function generateBracketTree(teamIds: number[]): BracketNode | null {
+  if (!teamIds || teamIds.length === 0) return null;
 
-  // Create leaves: each leaf contains 2 teams; if there's a remaining team (odd),
+  // Create leaves: each leaf contains 2 team IDs; if there's a remaining team (odd),
   // keep it in `leftoverTeam` to attach directly to the parent above.
   const leaves: BracketNode[] = [];
-  let leftoverTeam: string | undefined = undefined;
+  let leftoverTeam: number | undefined = undefined;
   let i = 0;
-  for (; i + 1 < teams.length; i += 2) {
-    leaves.push({ id: `n${leaves.length}`, teams: [teams[i], teams[i + 1]] });
+  for (; i + 1 < teamIds.length; i += 2) {
+    leaves.push({ id: `n${leaves.length}`, teams: [teamIds[i], teamIds[i + 1]] });
   }
-  if (i < teams.length) leftoverTeam = teams[i];
+  if (i < teamIds.length) leftoverTeam = teamIds[i];
 
   // If there is a leftover team and at least one leaf exists,
   // attach this team into a parent node above the last leaf.
@@ -191,15 +191,17 @@ export function generateBracketTree(teams: string[]): BracketNode | null {
  *     n1 [C,D]
  *   n6 [E]
  */
-export function visualizeBracket(root: BracketNode | null): string {
+export function visualizeBracket(root: BracketNode | null, teams: { id: number; name: string }[] = []): string {
   if (!root) return '(empty)';
 
   const lines: string[] = [];
+  const teamMap = new Map(teams.map(t => [t.id, t.name]));
 
   function nodeLabel(node: BracketNode) {
-    const teams =
-      node.teams && node.teams.length > 0 ? node.teams.join(',') : '';
-    return teams ? `${node.id} [${teams}]` : `${node.id}`;
+    const teamNames = node.teams && node.teams.length > 0 
+      ? node.teams.map(id => teamMap.get(id) || `ID${id}`).join(',')
+      : '';
+    return teamNames ? `${node.id} [${teamNames}]` : `${node.id}`;
   }
 
   // Pre-order rendering with ASCII connectors using dashes
@@ -233,7 +235,9 @@ export function visualizeBracket(root: BracketNode | null): string {
     lines.push('');
     lines.push('Consolation (3rd-place):');
     const [t1, t2] = root.consolation.teams;
-    lines.push(`  ${t1} vs ${t2}`);
+    const team1Name = teamMap.get(t1) || `ID${t1}`;
+    const team2Name = teamMap.get(t2) || `ID${t2}`;
+    lines.push(`  ${team1Name} vs ${team2Name}`);
   }
   return lines.join('\n');
 }

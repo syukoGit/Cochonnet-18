@@ -4,14 +4,19 @@ import type { Round } from '../utils/schedule';
 import type { BracketNode } from '../utils/phase2';
 import { generateBracketTree } from '../utils/phase2';
 
+export interface Team {
+  id: number;
+  name: string;
+}
+
 export interface EventState {
   name: string;
   matches: number;
-  teams: string[];
+  teams: Team[];
   rounds: Round[];
   phase2Groups: {
-    winners: string[];
-    consolation: string[];
+    winners: number[];
+    consolation: number[];
   } | null;
   // optional generated bracket trees for phase2 (winners and consolation)
   phase2Brackets?: {
@@ -40,9 +45,10 @@ const eventSlice = createSlice({
       state.matches = action.payload;
     },
     addTeam(state, action: PayloadAction<string>) {
-      const team = action.payload.trim();
-      if (team && !state.teams.includes(team)) {
-        state.teams.push(team);
+      const teamName = action.payload.trim();
+      if (teamName && !state.teams.some(team => team.name === teamName)) {
+        const nextId = state.teams.length > 0 ? Math.max(...state.teams.map(team => team.id)) + 1 : 1;
+        state.teams.push({ id: nextId, name: teamName });
       }
     },
     setRounds(state, action: PayloadAction<Round[]>) {
@@ -66,7 +72,7 @@ const eventSlice = createSlice({
     },
     setPhase2Groups(
       state,
-      action: PayloadAction<{ winners: string[]; consolation: string[] }>
+      action: PayloadAction<{ winners: number[]; consolation: number[] }>
     ) {
       state.phase2Groups = action.payload;
       // Pre-generate bracket trees for both winners and consolation so the UI
@@ -116,10 +122,10 @@ const eventSlice = createSlice({
         const leftWinnerIndex = applyWinner(node.left);
         const rightWinnerIndex = applyWinner(node.right);
 
-        // If a child returned a winner string, place it into this node's teams
+        // If a child returned a winner, place it into this node's teams
         if (leftWinnerIndex !== undefined || rightWinnerIndex !== undefined) {
           // initialize teams to 0..2 if unset
-          const t: string[] = node.teams ? [...node.teams] : [];
+          const t: number[] = node.teams ? [...node.teams] : [];
 
           if (node.left && leftWinnerIndex !== undefined) {
             // left child winner should occupy the 0 position

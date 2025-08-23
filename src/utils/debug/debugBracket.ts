@@ -1,9 +1,13 @@
 import { generateBracketTree, visualizeBracket } from '../phase2.ts';
 
-function debugVisualizeBracket(teams: string[]) {
-  console.log('---', `(${teams.length} teams)`);
-  const root = generateBracketTree(teams);
-  console.log(visualizeBracket(root));
+function debugVisualizeBracket(teamNames: string[]) {
+  console.log('---', `(${teamNames.length} teams)`);
+  // Convert team names to mock IDs for debugging
+  const teamIds = teamNames.map((_, index) => index + 1);
+  const teams = teamNames.map((name, index) => ({ id: index + 1, name }));
+  
+  const root = generateBracketTree(teamIds);
+  console.log(visualizeBracket(root, teams));
   console.log('');
 }
 
