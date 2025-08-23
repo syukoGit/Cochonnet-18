@@ -106,10 +106,13 @@ function Phase1() {
                       currentRank = idx + 1;
                       prevScore = entry.score;
                     }
+                    // Find the team object to get ID
+                    const team = teams.find(t => t.name === entry.team);
+                    const displayName = team ? `${team.id} - ${team.name}` : entry.team;
                     return (
                       <tr key={entry.team}>
                         <td>{currentRank}</td>
-                        <td>{entry.team}</td>
+                        <td>{displayName}</td>
                         <td>{entry.score}</td>
                       </tr>
                     );
@@ -153,58 +156,66 @@ function Phase1() {
                 </tr>
               </thead>
               <tbody>
-                {rounds[activeRound].map((match, idx) => (
-                  <tr key={idx}>
-                    <td>{match.teamA}</td>
-                    <td
-                      className={`score-col ${scoreClass(
-                        match.scoreA,
-                        match.scoreB,
-                        'A'
-                      )}`}
-                    >
-                      <input
-                        className="score-input"
-                        type="number"
-                        min={0}
-                        title="Score équipe 1"
-                        value={match.scoreA ?? ''}
-                        onChange={(e) =>
-                          handleScoreChange(
-                            activeRound,
-                            idx,
-                            'scoreA',
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-                    <td
-                      className={`score-col ${scoreClass(
-                        match.scoreA,
-                        match.scoreB,
-                        'B'
-                      )}`}
-                    >
-                      <input
-                        className="score-input"
-                        type="number"
-                        min={0}
-                        title="Score équipe 2"
-                        value={match.scoreB ?? ''}
-                        onChange={(e) =>
-                          handleScoreChange(
-                            activeRound,
-                            idx,
-                            'scoreB',
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-                    <td>{match.teamB}</td>
-                  </tr>
-                ))}
+                {rounds[activeRound].map((match, idx) => {
+                  // Find team objects to get IDs
+                  const teamA = teams.find(t => t.name === match.teamA);
+                  const teamB = teams.find(t => t.name === match.teamB);
+                  const displayTeamA = teamA ? `${teamA.id} - ${teamA.name}` : match.teamA;
+                  const displayTeamB = teamB ? `${teamB.id} - ${teamB.name}` : match.teamB;
+                  
+                  return (
+                    <tr key={idx}>
+                      <td>{displayTeamA}</td>
+                      <td
+                        className={`score-col ${scoreClass(
+                          match.scoreA,
+                          match.scoreB,
+                          'A'
+                        )}`}
+                      >
+                        <input
+                          className="score-input"
+                          type="number"
+                          min={0}
+                          title="Score équipe 1"
+                          value={match.scoreA ?? ''}
+                          onChange={(e) =>
+                            handleScoreChange(
+                              activeRound,
+                              idx,
+                              'scoreA',
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td
+                        className={`score-col ${scoreClass(
+                          match.scoreA,
+                          match.scoreB,
+                          'B'
+                        )}`}
+                      >
+                        <input
+                          className="score-input"
+                          type="number"
+                          min={0}
+                          title="Score équipe 2"
+                          value={match.scoreB ?? ''}
+                          onChange={(e) =>
+                            handleScoreChange(
+                              activeRound,
+                              idx,
+                              'scoreB',
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td>{displayTeamB}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

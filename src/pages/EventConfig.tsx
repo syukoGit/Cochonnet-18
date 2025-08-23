@@ -40,11 +40,22 @@ function EventConfig() {
         </div>
         <h4 className="team-list-header">{teams.length} équipes</h4>
         <div className="team-list-container">
-          <ul className="team-list">
-            {teams.map((team) => (
-              <li key={team.id}>{team.id} - {team.name}</li>
-            ))}
-          </ul>
+          <table className="team-list-table">
+            <thead>
+              <tr>
+                <th className="team-id-col">ID</th>
+                <th className="team-name-col">Nom</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((team) => (
+                <tr key={team.id}>
+                  <td className="team-id-col">{team.id}</td>
+                  <td className="team-name-col">{team.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
         <div className="team-add">
           <FloatingLabelInput

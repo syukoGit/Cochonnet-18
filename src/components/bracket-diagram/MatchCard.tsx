@@ -35,29 +35,35 @@ export default function MatchCard({ node, tree, teams }: Props) {
 
   return (
     <div className="match-card">
-      <p
+      <div
         className={`team ${isClickable ? 'clickable' : ''} ${
           isWinner0 ? 'winner' : ''
         }`}
         onClick={() => handleClick(0)}
       >
         {isWinner0 && <span className="crown">👑</span>}
-        <span className="team-name">
-          {team0 ? `${team0.id} - ${team0.name}` : ''}
-        </span>
-      </p>
+        <div className="team-display">
+          {team0 && <div className="team-id">{team0.id}</div>}
+          <div className="team-name">
+            {team0 ? team0.name : ''}
+          </div>
+        </div>
+      </div>
       <div className="h-divider" />
-      <p
+      <div
         className={`team ${isClickable ? 'clickable' : ''} ${
           isWinner1 ? 'winner' : ''
         }`}
         onClick={() => handleClick(1)}
       >
         {isWinner1 && <span className="crown">👑</span>}
-        <span className="team-name">
-          {team1 ? `${team1.id} - ${team1.name}` : ''}
-        </span>
-      </p>
+        <div className="team-display">
+          {team1 && <div className="team-id">{team1.id}</div>}
+          <div className="team-name">
+            {team1 ? team1.name : ''}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

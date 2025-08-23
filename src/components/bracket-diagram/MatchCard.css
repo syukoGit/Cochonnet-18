@@ -7,6 +7,9 @@
 .match-card .team {
   margin: 0;
   padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .match-card .team.clickable {
   cursor: pointer;
@@ -25,6 +28,28 @@
 }
 
 .match-card .team .crown {
-  margin-right: 6px;
   color: #f6c342; /* gold/yellow */
+  flex-shrink: 0;
+}
+
+.team-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.team-id {
+  font-size: 0.75em;
+  font-weight: bold;
+  color: #666;
+  line-height: 1;
+}
+
+.team-name {
+  font-size: 0.9em;
+  line-height: 1.2;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
