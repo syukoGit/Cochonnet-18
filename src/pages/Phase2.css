@@ -16,7 +16,6 @@
 }
 
 .bracket-container {
-  flex: 1;
   display: flex;
   gap: 2rem;
   overflow: auto;
@@ -56,13 +55,7 @@
   border-radius: 8px;
   overflow: hidden;
   background-color: white;
-  display: flex;
-  flex-direction: column; /* teams stacked vertically */
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
   width: 160px;
-  height: 80px;
 }
 
 .match-card p {
