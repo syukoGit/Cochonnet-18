@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { addTeam, setMatches, setName, setRounds } from '../store/eventSlice';
+import { addTeam, removeTeam, setMatches, setName, setRounds } from '../store/eventSlice';
 import { generateRounds } from '../utils/schedule';
 import { useNavigate } from 'react-router-dom';
 import './EventConfig.css';
@@ -23,6 +23,10 @@ function EventConfig() {
     if (e.key === 'Enter') {
       handleAddTeam();
     }
+  };
+
+  const handleRemoveTeam = (teamId: number) => {
+    dispatch(removeTeam(teamId));
   };
 
   return (
@@ -51,13 +55,23 @@ function EventConfig() {
               <tr>
                 <th className="team-id-col">ID</th>
                 <th className="team-name-col">Nom</th>
+                <th className="team-action-col"></th>
               </tr>
             </thead>
             <tbody>
               {teams.map((team) => (
-                <tr key={team.id}>
+                <tr key={team.id} className="team-row">
                   <td className="team-id-col">{team.id}</td>
                   <td className="team-name-col">{team.name}</td>
+                  <td className="team-action-col">
+                    <button 
+                      className="delete-team-btn"
+                      onClick={() => handleRemoveTeam(team.id)}
+                      title="Supprimer l'équipe"
+                    >
+                      🗑️
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
