@@ -4,10 +4,11 @@ export interface RankingEntry {
 }
 
 import type { Round } from './schedule';
+import type { Team } from '../store/eventSlice';
 
-export function computeRanking(teams: string[], rounds: Round[]): RankingEntry[] {
+export function computeRanking(teams: Team[], rounds: Round[]): RankingEntry[] {
   const scores = new Map<string, number>();
-  teams.forEach((t) => scores.set(t, 0));
+  teams.forEach((t) => scores.set(t.name, 0));
 
   for (const round of rounds) {
     for (const match of round) {
@@ -25,8 +26,8 @@ export function computeRanking(teams: string[], rounds: Round[]): RankingEntry[]
   }
 
   const list: RankingEntry[] = teams.map((team) => ({
-    team,
-    score: scores.get(team) ?? 0,
+    team: team.name,
+    score: scores.get(team.name) ?? 0,
   }));
   list.sort((a, b) => b.score - a.score);
   return list;
