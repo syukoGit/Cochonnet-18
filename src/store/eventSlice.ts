@@ -47,9 +47,21 @@ const eventSlice = createSlice({
     addTeam(state, action: PayloadAction<string>) {
       const teamName = action.payload.trim();
       if (teamName && !state.teams.some(team => team.name === teamName)) {
-        const nextId = state.teams.length > 0 ? Math.max(...state.teams.map(team => team.id)) + 1 : 1;
+        // Find the lowest available ID
+        const existingIds = state.teams.map(team => team.id).sort((a, b) => a - b);
+        let nextId = 1;
+        for (const id of existingIds) {
+          if (id === nextId) {
+            nextId++;
+          } else {
+            break;
+          }
+        }
         state.teams.push({ id: nextId, name: teamName });
       }
+    },
+    removeTeam(state, action: PayloadAction<number>) {
+      state.teams = state.teams.filter(team => team.id !== action.payload);
     },
     setRounds(state, action: PayloadAction<Round[]>) {
       state.rounds = action.payload;
@@ -174,6 +186,7 @@ export const {
   setName,
   setMatches,
   addTeam,
+  removeTeam,
   setRounds,
   setMatchScore,
   setPhase2Groups,
