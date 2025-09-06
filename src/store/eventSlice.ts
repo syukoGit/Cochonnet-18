@@ -179,6 +179,14 @@ const eventSlice = createSlice({
         return undefined;
       }
     },
+    resetState(state) {
+      // Reset to initial state
+      Object.assign(state, initialState);
+    },
+    restoreState(state, action: PayloadAction<EventState>) {
+      // Restore from backup
+      Object.assign(state, action.payload);
+    },
   },
 });
 
@@ -192,5 +200,7 @@ export const {
   setPhase2Groups,
   setPhase2Brackets,
   setPhase2Winner,
+  resetState,
+  restoreState,
 } = eventSlice.actions;
 export default eventSlice.reducer;

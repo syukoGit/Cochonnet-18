@@ -12,3 +12,25 @@
   height: 40vmin;
   pointer-events: none;
 }
+
+.home-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+.load-save-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.load-save-button:hover {
+  background-color: #5a6268;
+}
