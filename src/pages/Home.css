@@ -6,6 +6,14 @@
   gap: 1rem;
   width: 100%;
   height: 100%;
+  position: relative;
+}
+
+.auto-save-progress {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
 }
 
 .App-logo {
@@ -18,19 +26,4 @@
   gap: 1rem;
   flex-direction: column;
   align-items: center;
-}
-
-.load-save-button {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-}
-
-.load-save-button:hover {
-  background-color: #5a6268;
 }
