@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "description": "Logiciel de gestion de tournoi de pétanque",
-  "author": "Cochonnet-18 Team",
+  "author": "syukoGit",
   "type": "module",
   "main": "electron/main.cjs",
   "homepage": "./",
