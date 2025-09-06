@@ -4,19 +4,24 @@
   align-items: stretch;
   justify-content: center;
 }
+
 .match-card .team {
   margin: 0;
   padding: 4px 8px;
   display: flex;
   align-items: center;
   gap: 6px;
+  position: relative;
 }
+
 .match-card .team.clickable {
   cursor: pointer;
 }
+
 .match-card .team.clickable:hover {
   background: rgba(0, 0, 0, 0.04);
 }
+
 .h-divider {
   height: 1px;
   background: #ddd;
@@ -27,15 +32,24 @@
   font-weight: 700;
 }
 
+/* reserve left space only when the crown is shown */
+/* crown is translated out of the content flow */
+
 .match-card .team .crown {
-  color: #f6c342; /* gold/yellow */
-  flex-shrink: 0;
+  position: absolute;
+  left: 0px;
+  top: 8px;
+  transform: translateY(-50%);
+  line-height: 1;
+  pointer-events: none;
 }
 
 .team-display {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   min-width: 0;
 }
 

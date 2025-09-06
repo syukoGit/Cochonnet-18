@@ -12,14 +12,14 @@ interface Props {
 
 export default function MatchCard({ node, tree, teams }: Props) {
   const dispatch = useAppDispatch();
-  
+
   // Create a map for quick team lookup
-  const teamMap = new Map(teams.map(team => [team.id, team]));
-  
+  const teamMap = new Map(teams.map((team) => [team.id, team]));
+
   // Get team information from IDs
   const team0 = node.teams?.[0] ? teamMap.get(node.teams[0]) : undefined;
   const team1 = node.teams?.[1] ? teamMap.get(node.teams[1]) : undefined;
-  
+
   // Only allow clicking when there are exactly two valid teams
   const isClickable = !!(team0 && team1);
 
@@ -41,12 +41,10 @@ export default function MatchCard({ node, tree, teams }: Props) {
         }`}
         onClick={() => handleClick(0)}
       >
-        {isWinner0 && <span className="crown">👑</span>}
+        {isWinner0 && <p className="crown">👑</p>}
         <div className="team-display">
           {team0 && <div className="team-id">{team0.id}</div>}
-          <div className="team-name">
-            {team0 ? team0.name : ''}
-          </div>
+          <div className="team-name">{team0 ? team0.name : ''}</div>
         </div>
       </div>
       <div className="h-divider" />
@@ -56,12 +54,10 @@ export default function MatchCard({ node, tree, teams }: Props) {
         }`}
         onClick={() => handleClick(1)}
       >
-        {isWinner1 && <span className="crown">👑</span>}
+        {isWinner1 && <p className="crown">👑</p>}
         <div className="team-display">
           {team1 && <div className="team-id">{team1.id}</div>}
-          <div className="team-name">
-            {team1 ? team1.name : ''}
-          </div>
+          <div className="team-name">{team1 ? team1.name : ''}</div>
         </div>
       </div>
     </div>
