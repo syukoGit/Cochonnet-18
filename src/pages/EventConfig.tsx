@@ -19,6 +19,12 @@ function EventConfig() {
     }
   };
 
+  const handleTeamKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleAddTeam();
+    }
+  };
+
   return (
     <div className="config-wrapper">
       <h1 className="config-title">Configuration de l'évènement</h1>
@@ -63,6 +69,7 @@ function EventConfig() {
             label="Ajouter une équipe"
             value={newTeam}
             onChange={(e) => setNewTeam(e.target.value)}
+            onKeyDown={handleTeamKeyDown}
             type="text"
             name="team-name"
           />
