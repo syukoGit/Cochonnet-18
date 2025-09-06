@@ -75,9 +75,14 @@ function EventConfig() {
         className="start-button"
         type="button"
         onClick={() => {
-          const rounds = generateRounds(teams.map(team => team.name), matches);
+          const rounds = generateRounds(
+            teams.map((team) => team.name),
+            matches
+          );
           if (!rounds) {
-            window.alert("Nombre de matchs trop élevé pour le nombre d'équipes");
+            window.alert(
+              "Nombre de matchs trop élevé pour le nombre d'équipes"
+            );
             return;
           }
           dispatch(setRounds(rounds));
