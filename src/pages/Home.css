@@ -6,14 +6,6 @@
   gap: 1rem;
   width: 100%;
   height: 100%;
-  position: relative;
-}
-
-.auto-save-progress {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10;
 }
 
 .App-logo {
