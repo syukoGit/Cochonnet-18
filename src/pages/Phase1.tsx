@@ -229,8 +229,11 @@ function Phase1() {
           // Convert ranking team names back to team IDs
           const rankedTeamIds = ranking.map(rankEntry => {
             const team = teams.find(t => t.name === rankEntry.team);
-            return team ? team.id : 0; // fallback to 0 if not found (shouldn't happen)
-          }).filter(id => id > 0); // filter out any invalid IDs
+            if (!team) {
+              throw new Error(`Team not found for ranking entry: ${rankEntry.team}`);
+            }
+            return team.id;
+          });
           
           const { winners, consolation } = splitPhase2Groups(rankedTeamIds);
           dispatch(setPhase2Groups({ winners, consolation }));
