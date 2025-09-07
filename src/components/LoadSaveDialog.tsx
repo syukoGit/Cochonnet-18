@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
 import { restoreState } from '../store/eventSlice';
 import {
@@ -21,6 +22,7 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({
   onSuccess,
 }) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [backups, setBackups] = useState<BackupMetadata[]>([]);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,6 +51,12 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({
         // Restore the entire event state using the new action
         if (state.event) {
           dispatch(restoreState(state.event));
+          
+          // Navigate to the saved route if it exists
+          const savedRoute = state.event.currentRoute;
+          if (savedRoute && savedRoute !== '/') {
+            navigate(savedRoute);
+          }
         }
 
         onSuccess?.();
