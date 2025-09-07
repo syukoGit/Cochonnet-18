@@ -102,13 +102,14 @@
   background-color: #f8f9fa;
 }
 
-.backup-item input[type="radio"] {
+.backup-item input[type='radio'] {
   margin-right: 0.75rem;
   cursor: pointer;
+  flex: 1;
 }
 
 .backup-info {
-  flex: 1;
+  flex: 2;
 }
 
 .backup-timestamp {
@@ -128,41 +129,4 @@
   gap: 0.75rem;
   padding: 1.5rem;
   border-top: 1px solid #e0e0e0;
-}
-
-.cancel-button,
-.load-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-}
-
-.cancel-button {
-  background: white;
-  color: #666;
-}
-
-.cancel-button:hover {
-  background-color: #f5f5f5;
-}
-
-.load-button {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.load-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-
-.load-button:disabled {
-  background-color: #6c757d;
-  border-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.65;
 }

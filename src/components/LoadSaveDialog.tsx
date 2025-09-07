@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch } from '../store/hooks';
 import { restoreState } from '../store/eventSlice';
-import { getAvailableBackups, loadBackup, formatBackupTimestamp, type BackupMetadata } from '../utils/persistence';
+import {
+  getAvailableBackups,
+  loadBackup,
+  formatBackupTimestamp,
+  type BackupMetadata,
+} from '../utils/persistence';
 import './LoadSaveDialog.css';
 
 interface LoadSaveDialogProps {
@@ -10,7 +15,11 @@ interface LoadSaveDialogProps {
   onSuccess?: () => void;
 }
 
-const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({ isOpen, onClose, onSuccess }) => {
+const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
   const dispatch = useAppDispatch();
   const [backups, setBackups] = useState<BackupMetadata[]>([]);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
@@ -35,17 +44,19 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({ isOpen, onClose, onSucc
 
     try {
       const state = loadBackup(selectedBackup);
-      
+
       if (state) {
         // Restore the entire event state using the new action
         if (state.event) {
           dispatch(restoreState(state.event));
         }
-        
+
         onSuccess?.();
         onClose();
       } else {
-        setError('Impossible de charger la sauvegarde. Le fichier pourrait être corrompu.');
+        setError(
+          'Impossible de charger la sauvegarde. Le fichier pourrait être corrompu.'
+        );
       }
     } catch (err) {
       console.error('Failed to load backup:', err);
@@ -67,26 +78,25 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({ isOpen, onClose, onSucc
       <div className="load-save-dialog">
         <div className="load-save-header">
           <h2>Charger une sauvegarde</h2>
-          <button 
+          <button
             className="close-button"
             onClick={onClose}
             aria-label="Fermer"
           >
-            ×
+            x
           </button>
         </div>
-        
+
         <div className="load-save-content">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-          
+          {error && <div className="error-message">{error}</div>}
+
           {backups.length === 0 ? (
             <div className="no-backups">
               <p>Aucune sauvegarde disponible.</p>
-              <p>Les sauvegardes sont créées automatiquement toutes les 5 minutes lorsque vous configurez un événement.</p>
+              <p>
+                Les sauvegardes sont créées automatiquement toutes les 5 minutes
+                lorsque vous configurez un événement.
+              </p>
             </div>
           ) : (
             <>
@@ -115,13 +125,9 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({ isOpen, onClose, onSucc
             </>
           )}
         </div>
-        
+
         <div className="load-save-actions">
-          <button
-            type="button"
-            onClick={onClose}
-            className="cancel-button"
-          >
+          <button type="button" onClick={onClose} className="button">
             Annuler
           </button>
           {backups.length > 0 && (
@@ -129,7 +135,7 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({ isOpen, onClose, onSucc
               type="button"
               onClick={handleLoadBackup}
               disabled={!selectedBackup || loading}
-              className="load-button"
+              className="button"
             >
               {loading ? 'Chargement...' : 'Charger'}
             </button>
