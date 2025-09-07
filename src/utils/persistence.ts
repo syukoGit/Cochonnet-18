@@ -155,7 +155,7 @@ export function formatBackupTimestamp(timestamp: string): string {
       parseInt(day),
       parseInt(hours),
       parseInt(minutes),
-      parseInt(seconds.padEnd(3, '0').substring(0, 3))
+      parseInt(seconds, 10)
     );
     
     return date.toLocaleString();
