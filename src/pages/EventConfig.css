@@ -63,6 +63,7 @@
   width: 100%;
   border-collapse: collapse;
   border: none;
+  table-layout: fixed;
 }
 
 .team-list-table th,
@@ -71,6 +72,9 @@
   text-align: left;
   border: none;
   border-bottom: 1px solid #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .team-list-table th {
@@ -81,17 +85,20 @@
 }
 
 .team-id-col {
-  width: 1px; /* Auto-resize to content */
+  width: 40px;
   white-space: nowrap;
   border-right: 1px solid #eee;
 }
 
 .team-name-col {
-  width: auto; /* Takes remaining space */
+  width: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .team-action-col {
-  width: 1px; /* Auto-resize to content */
+  width: 40px; /* Auto-resize to content */
   white-space: nowrap;
   text-align: center;
 }
