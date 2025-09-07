@@ -10,7 +10,7 @@ const BACKUP_PREFIX = 'cochonnet-backup-';
 const MAX_BACKUPS = 3;
 
 /**
- * Generate a timestamp string in format YYYY-MM-DD-hh-mm-sss
+ * Generate a timestamp string in format YYYY-MM-DD-hh-mm-ss
  */
 function generateTimestamp(): string {
   const now = new Date();
