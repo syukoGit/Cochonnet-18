@@ -8,7 +8,6 @@ import Phase2 from './pages/Phase2';
 import './App.css';
 
 function App() {
-  // Initialize auto-save functionality and get progress data
   const { manualSave, progress, formattedTimeUntilNextSave } = useAutoSave();
 
   const handleManualSave = () => {
@@ -20,7 +19,6 @@ function App() {
 
   return (
     <Router>
-      {/* Global auto-save progress indicator visible on all pages */}
       <div className="global-auto-save-progress">
         <CircularProgress
           progress={progress}
@@ -28,7 +26,7 @@ function App() {
           timeRemaining={formattedTimeUntilNextSave}
         />
       </div>
-      
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/config" element={<EventConfig />} />
