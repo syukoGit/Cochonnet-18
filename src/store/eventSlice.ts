@@ -23,6 +23,8 @@ export interface EventState {
     winners?: BracketNode | null;
     consolation?: BracketNode | null;
   } | null;
+  // Current route/step in the application
+  currentRoute: string;
 }
 
 const initialState: EventState = {
@@ -32,6 +34,7 @@ const initialState: EventState = {
   rounds: [],
   phase2Groups: null,
   phase2Brackets: null,
+  currentRoute: '/',
 };
 
 const eventSlice = createSlice({
@@ -179,6 +182,17 @@ const eventSlice = createSlice({
         return undefined;
       }
     },
+    resetState(state) {
+      // Reset to initial state
+      Object.assign(state, initialState);
+    },
+    restoreState(state, action: PayloadAction<EventState>) {
+      // Restore from backup
+      Object.assign(state, action.payload);
+    },
+    setCurrentRoute(state, action: PayloadAction<string>) {
+      state.currentRoute = action.payload;
+    },
   },
 });
 
@@ -192,5 +206,8 @@ export const {
   setPhase2Groups,
   setPhase2Brackets,
   setPhase2Winner,
+  resetState,
+  restoreState,
+  setCurrentRoute,
 } = eventSlice.actions;
 export default eventSlice.reducer;

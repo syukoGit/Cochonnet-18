@@ -1,0 +1,36 @@
+.circular-progress-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.circular-progress-container:hover {
+  transform: scale(1.05);
+}
+
+.circular-progress-svg {
+  transform: rotate(0deg);
+}
+
+.circular-progress-background {
+  transition: stroke 0.3s ease;
+}
+
+.circular-progress-foreground {
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.circular-progress-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  pointer-events: none;
+}
+
+.circular-progress-container:hover .circular-progress-icon {
+  color: #fe1b00;
+}
