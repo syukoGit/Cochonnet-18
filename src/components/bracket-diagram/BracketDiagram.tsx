@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import generateBracketGrid from '../../utils/bracketDiagrams';
 import {
@@ -21,7 +22,11 @@ export default function BracketDiagram({
   activeTree,
 }: BracketDiagramProps) {
   const teams = useAppSelector((state) => state.event.teams);
-  const grid = generateBracketGrid(rootNode);
+  const [grid, setGrid] = useState(generateBracketGrid(rootNode));
+
+  useEffect(() => {
+    setGrid(generateBracketGrid(rootNode));
+  }, [activeTree, rootNode]);
 
   return (
     <table className="bracket-table">

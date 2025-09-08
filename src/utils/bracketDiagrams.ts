@@ -49,6 +49,10 @@ function setConnectorPosition(
 
   if (type === 'UpDownToMiddle') length = length * 2 - 1;
 
+  if (!grid[y]) {
+    grid[y] = [];
+  }
+
   grid[y][x] = {
     length,
     type,
@@ -82,7 +86,15 @@ function setNodePosition(
   let x;
   let y;
 
-  if (!parentPos) {
+  if (maxDepth <= 1) {
+    if (!parentPos) {
+      x = 2;
+      y = 2;
+    } else {
+      x = 0;
+      y = branch === 'left' ? 0 : 4;
+    }
+  } else if (!parentPos) {
     x = maxDepth * 2;
     y = Math.pow(2, maxDepth) - 1;
   } else {
