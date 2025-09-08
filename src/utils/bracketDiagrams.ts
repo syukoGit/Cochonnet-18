@@ -106,9 +106,7 @@ function setNodePosition(
   }
 
   if (!grid[y]) {
-    grid[y] = new Array<
-      BracketNode | Connector | null | 'Connector expansion'
-    >();
+    grid[y] = [];
   }
 
   grid[y][x] = node;
