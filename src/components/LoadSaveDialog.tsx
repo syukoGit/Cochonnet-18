@@ -49,11 +49,11 @@ const LoadSaveDialog: React.FC<LoadSaveDialogProps> = ({
 
       if (state) {
         // Restore the entire event state using the new action
-        if (state.event) {
-          dispatch(restoreState(state.event));
-          
+        if (state) {
+          dispatch(restoreState(state));
+
           // Navigate to the saved route if it exists
-          const savedRoute = state.event.currentRoute;
+          const savedRoute = state.currentRoute;
           if (savedRoute && savedRoute !== '/') {
             navigate(savedRoute);
           }

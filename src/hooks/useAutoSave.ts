@@ -8,7 +8,7 @@ const AUTO_SAVE_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
  * Hook to handle automatic saving of Redux state to localStorage
  */
 export function useAutoSave() {
-  const state = useAppSelector((state) => state);
+  const state = useAppSelector((state) => state.event);
   const lastSaveTimeRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -50,7 +50,7 @@ export function useAutoSave() {
     // Start auto-save timer
     intervalRef.current = setInterval(() => {
       // Only save if there's actual data (e.g., teams are configured)
-      if (state.event.teams.length > 0 || state.event.name.trim() !== '') {
+      if (state.teams.length > 0 || state.name.trim() !== '') {
         const success = saveBackup(state);
 
         if (success) {
@@ -85,7 +85,7 @@ export function useAutoSave() {
     // and there's meaningful data to save
     if (
       now - lastSaveTimeRef.current > 30000 &&
-      (state.event.teams.length > 0 || state.event.rounds.length > 0)
+      (state.teams.length > 0 || state.rounds.length > 0)
     ) {
       const success = saveBackup(state);
       if (success) {
@@ -93,7 +93,7 @@ export function useAutoSave() {
         console.log('Critical change auto-save completed');
       }
     }
-  }, [state.event.rounds, state.event.phase2Groups, state]);
+  }, [state.rounds, state.phase2Groups, state]);
 
   // Manual save function
   const manualSave = () => {

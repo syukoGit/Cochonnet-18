@@ -1,5 +1,8 @@
 .circular-progress-container {
-  position: relative;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
   display: inline-flex;
   align-items: center;
   justify-content: center;

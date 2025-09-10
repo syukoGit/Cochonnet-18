@@ -1,4 +1,4 @@
-import type { RootState } from '../store';
+import type { EventState } from '../store/eventSlice';
 
 export interface BackupMetadata {
   timestamp: string;
@@ -20,25 +20,25 @@ function generateTimestamp(): string {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
 }
 
 /**
  * Save Redux state to localStorage with timestamp-based naming
  */
-export function saveBackup(state: RootState): boolean {
+export function saveBackup(state: EventState): boolean {
   try {
     const timestamp = generateTimestamp();
     const backupKey = `${BACKUP_PREFIX}${timestamp}`;
     const serializedState = JSON.stringify(state);
-    
+
     // Save the backup
     localStorage.setItem(backupKey, serializedState);
-    
+
     // Clean up old backups if we exceed the limit
     cleanupOldBackups();
-    
+
     console.log(`Backup saved: ${backupKey}`);
     return true;
   } catch (error) {
@@ -53,7 +53,7 @@ export function saveBackup(state: RootState): boolean {
 export function getAvailableBackups(): BackupMetadata[] {
   try {
     const backups: BackupMetadata[] = [];
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith(BACKUP_PREFIX)) {
@@ -63,12 +63,12 @@ export function getAvailableBackups(): BackupMetadata[] {
           backups.push({
             timestamp,
             name: key,
-            size: data.length
+            size: data.length,
           });
         }
       }
     }
-    
+
     // Sort by timestamp (newest first)
     return backups.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   } catch (error) {
@@ -80,15 +80,15 @@ export function getAvailableBackups(): BackupMetadata[] {
 /**
  * Load a specific backup from localStorage
  */
-export function loadBackup(backupName: string): RootState | null {
+export function loadBackup(backupName: string): EventState | null {
   try {
     const data = localStorage.getItem(backupName);
     if (!data) {
       console.error(`Backup not found: ${backupName}`);
       return null;
     }
-    
-    const parsedState = JSON.parse(data) as RootState;
+
+    const parsedState = JSON.parse(data) as EventState;
     console.log(`Backup loaded: ${backupName}`);
     return parsedState;
   } catch (error) {
@@ -103,11 +103,11 @@ export function loadBackup(backupName: string): RootState | null {
 function cleanupOldBackups(): void {
   try {
     const backups = getAvailableBackups();
-    
+
     // Remove backups beyond the limit
     if (backups.length > MAX_BACKUPS) {
       const backupsToDelete = backups.slice(MAX_BACKUPS);
-      backupsToDelete.forEach(backup => {
+      backupsToDelete.forEach((backup) => {
         localStorage.removeItem(backup.name);
         console.log(`Old backup deleted: ${backup.name}`);
       });
@@ -147,7 +147,7 @@ export function formatBackupTimestamp(timestamp: string): string {
     // Parse YYYY-MM-DD-hh-mm-sss format
     const parts = timestamp.split('-');
     if (parts.length !== 6) return timestamp;
-    
+
     const [year, month, day, hours, minutes, seconds] = parts;
     const date = new Date(
       parseInt(year),
@@ -157,7 +157,7 @@ export function formatBackupTimestamp(timestamp: string): string {
       parseInt(minutes),
       parseInt(seconds, 10)
     );
-    
+
     return date.toLocaleString();
   } catch {
     return timestamp;
