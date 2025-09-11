@@ -4,7 +4,6 @@ import EventConfig from './pages/EventConfig';
 import Phase1 from './pages/Phase1';
 import Phase2 from './pages/Phase2';
 import Results from './pages/Results';
-import './App.css';
 import AutoSaveProgress from './components/AutoSaveProgress';
 import { useRouteTracking } from './hooks/useRouteTracking';
 
