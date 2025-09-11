@@ -1,10 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../store/hooks';
 import './NavigationButtons.css';
-
-// Define the page order for navigation
-const PAGE_ORDER = ['/', '/config', '/phase1', '/phase2', '/results'];
-
+import { PAGE_ORDER } from '../constants/routes';
 const NavigationButtons = () => {
   const navigate = useNavigate();
   const location = useLocation();
