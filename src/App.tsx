@@ -5,6 +5,7 @@ import Phase1 from './pages/Phase1';
 import Phase2 from './pages/Phase2';
 import Results from './pages/Results';
 import AutoSaveProgress from './components/AutoSaveProgress';
+import NavigationButtons from './components/NavigationButtons';
 import { useRouteTracking } from './hooks/useRouteTracking';
 
 function AppComponent() {
@@ -12,6 +13,7 @@ function AppComponent() {
 
   return (
     <>
+      <NavigationButtons />
       <div className="global-auto-save-progress">
         <AutoSaveProgress size={60} strokeWidth={4} />
       </div>

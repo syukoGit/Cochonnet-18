@@ -25,6 +25,8 @@ export interface EventState {
   } | null;
   // Current route/step in the application
   currentRoute: string;
+  // Track which pages have been visited for navigation
+  visitedPages: string[];
 }
 
 const initialState: EventState = {
@@ -35,6 +37,7 @@ const initialState: EventState = {
   phase2Groups: null,
   phase2Brackets: null,
   currentRoute: '/',
+  visitedPages: ['/'], // Home is always visited first
 };
 
 const eventSlice = createSlice({
@@ -192,6 +195,16 @@ const eventSlice = createSlice({
     },
     setCurrentRoute(state, action: PayloadAction<string>) {
       state.currentRoute = action.payload;
+      // Add to visited pages if not already present
+      if (!state.visitedPages.includes(action.payload)) {
+        state.visitedPages.push(action.payload);
+      }
+    },
+    addVisitedPage(state, action: PayloadAction<string>) {
+      // Add a page to visited pages without changing current route
+      if (!state.visitedPages.includes(action.payload)) {
+        state.visitedPages.push(action.payload);
+      }
     },
   },
 });
@@ -209,5 +222,6 @@ export const {
   resetState,
   restoreState,
   setCurrentRoute,
+  addVisitedPage,
 } = eventSlice.actions;
 export default eventSlice.reducer;
