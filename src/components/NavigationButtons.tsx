@@ -14,10 +14,13 @@ const NavigationButtons = () => {
   const hasPreviousPage = currentPageIndex > 0;
   const hasNextPage = currentPageIndex < PAGE_ORDER.length - 1;
   const nextPagePath = hasNextPage ? PAGE_ORDER[currentPageIndex + 1] : null;
-  const previousPagePath = hasPreviousPage ? PAGE_ORDER[currentPageIndex - 1] : null;
+  const previousPagePath = hasPreviousPage
+    ? PAGE_ORDER[currentPageIndex - 1]
+    : null;
 
   // Right arrow should only be visible if the next page was already visited
-  const shouldShowRightArrow = hasNextPage && nextPagePath && visitedPages.includes(nextPagePath);
+  const shouldShowRightArrow =
+    hasNextPage && nextPagePath && visitedPages.includes(nextPagePath);
 
   const handlePreviousPage = () => {
     if (previousPagePath) {
@@ -43,7 +46,23 @@ const NavigationButtons = () => {
           aria-label="Previous page"
           title="Previous page"
         >
-          &#8249; {/* Left-pointing single angle quotation mark */}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M15 6L9 12L15 18"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       )}
       {shouldShowRightArrow && (
@@ -53,7 +72,23 @@ const NavigationButtons = () => {
           aria-label="Next page"
           title="Next page"
         >
-          &#8250; {/* Right-pointing single angle quotation mark */}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M9 6L15 12L9 18"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       )}
     </div>
