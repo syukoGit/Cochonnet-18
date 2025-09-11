@@ -29,7 +29,7 @@ export interface EventState {
 
 const initialState: EventState = {
   name: '',
-  matches: 1,
+  matches: 3,
   teams: [],
   rounds: [],
   phase2Groups: null,
@@ -49,9 +49,11 @@ const eventSlice = createSlice({
     },
     addTeam(state, action: PayloadAction<string>) {
       const teamName = action.payload.trim();
-      if (teamName && !state.teams.some(team => team.name === teamName)) {
+      if (teamName && !state.teams.some((team) => team.name === teamName)) {
         // Find the lowest available ID
-        const existingIds = state.teams.map(team => team.id).sort((a, b) => a - b);
+        const existingIds = state.teams
+          .map((team) => team.id)
+          .sort((a, b) => a - b);
         let nextId = 1;
         for (const id of existingIds) {
           if (id === nextId) {
@@ -64,7 +66,7 @@ const eventSlice = createSlice({
       }
     },
     removeTeam(state, action: PayloadAction<number>) {
-      state.teams = state.teams.filter(team => team.id !== action.payload);
+      state.teams = state.teams.filter((team) => team.id !== action.payload);
     },
     setRounds(state, action: PayloadAction<Round[]>) {
       state.rounds = action.payload;
