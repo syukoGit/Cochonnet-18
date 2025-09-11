@@ -58,7 +58,7 @@
   margin-bottom: 2rem;
   color: #333;
   font-size: 1.5rem;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #fe1b00;
   padding-bottom: 0.5rem;
 }
 
@@ -76,11 +76,6 @@
   border-radius: 8px;
   border: 1px solid #e9ecef;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.position:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .medal {
