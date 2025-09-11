@@ -90,7 +90,7 @@ function Results() {
 
         {/* Consolation Tournament Results */}
         <div className="tournament-results">
-          <h3>Tournoi consolante</h3>
+          <h3>Consolante</h3>
           <div className="podium">
             <div className="position">
               <div className="medal gold">🥇</div>
