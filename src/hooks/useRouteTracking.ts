@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setCurrentRoute } from '../store/eventSlice';
 
 // Define the page order for navigation
-const PAGE_ORDER = ['/', '/config', '/phase1', '/phase2', '/results'];
+import { PAGE_ORDER } from '../constants/navigation';
 
 /**
  * Hook to track route changes and update Redux state
