@@ -7,6 +7,42 @@
   gap: 2rem;
 }
 
+.results-notification {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.results-notification p {
+  margin: 0 0 1rem 0;
+  color: #155724;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.results-link {
+  text-decoration: none;
+}
+
+.results-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.results-button:hover {
+  background-color: #218838;
+}
+
 .phase2-tabs {
   display: flex;
   gap: 0.5rem;
