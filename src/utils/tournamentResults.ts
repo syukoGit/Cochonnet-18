@@ -86,8 +86,9 @@ export function extractTournamentResults(
   };
   
   if (consolationComplete && consolationBracket) {
-    const winnerTeamId = consolationBracket.teams[consolationBracket.winnerIndex!];
-    const loserTeamId = consolationBracket.teams[consolationBracket.winnerIndex! === 0 ? 1 : 0];
+    const winnerIndex = consolationBracket.winnerIndex!;
+    const winnerTeamId = consolationBracket.teams[winnerIndex];
+    const loserTeamId = consolationBracket.teams[winnerIndex === 0 ? 1 : 0];
     
     consolationResult.first = teamMap.get(winnerTeamId) || null;
     consolationResult.second = teamMap.get(loserTeamId) || null;
