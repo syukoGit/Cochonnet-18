@@ -37,16 +37,6 @@ function Phase2() {
     <div className="phase2-wrapper">
       <h1>Phase 2</h1>
       <h2>{active === 'winners' ? 'Tournoi des gagnants' : 'Consolantes'}</h2>
-      
-      {bothTournamentsFinished && (
-        <div className="results-notification">
-          <p>🎉 Les deux tournois sont terminés !</p>
-          <Link to="/results" className="results-link">
-            <button className="results-button">Voir les résultats</button>
-          </Link>
-        </div>
-      )}
-      
       <div className="phase2-tabs">
         <button
           type="button"
@@ -68,6 +58,14 @@ function Phase2() {
       <div className="bracket-container">
         <BracketDiagram rootNode={activeTree} activeTree={active} />
       </div>
+      {bothTournamentsFinished && (
+        <div className="results-notification">
+          <p>🎉 Les deux tournois sont terminés !</p>
+          <Link to="/results" className="results-link">
+            <button className="results-button">Voir les résultats</button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
