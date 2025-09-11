@@ -58,7 +58,7 @@
   position: relative;
   width: 90%;
   height: 2px;
-  background-color: lightgray;
+  background-color: gray;
   margin-top: 2px;
 }
 
@@ -67,7 +67,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  background-color: gray;
+  background-color: lightgray;
 }
 
 .phase1-table {
