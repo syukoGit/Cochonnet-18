@@ -27,7 +27,7 @@ function Home() {
           </button>
         </div>
       </div>
-      
+
       <LoadSaveDialog
         isOpen={isLoadDialogOpen}
         onClose={() => setIsLoadDialogOpen(false)}

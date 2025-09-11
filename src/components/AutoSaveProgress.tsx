@@ -1,42 +1,41 @@
-import React from 'react';
-import './CircularProgress.css';
+import './AutoSaveProgress.css';
+import { useAutoSave } from '../hooks/useAutoSave';
 
-interface CircularProgressProps {
-  progress: number; // 0-100
-  size?: number; // diameter in pixels
-  strokeWidth?: number; // thickness of the progress ring
-  onClick?: () => void;
-  timeRemaining?: string;
+interface AutoSaveProgressProps {
+  size: number;
+  strokeWidth: number;
 }
 
-const CircularProgress: React.FC<CircularProgressProps> = ({
-  progress,
-  size = 60,
-  strokeWidth = 4,
-  onClick,
-  timeRemaining
-}) => {
+export default function AutoSaveProgress({
+  size,
+  strokeWidth,
+}: AutoSaveProgressProps) {
+  const { manualSave, progress, formattedTimeUntilNextSave } = useAutoSave();
+
+  const handleManualSave = () => {
+    const success = manualSave();
+    if (success) {
+      console.log('Manual save triggered from global progress indicator');
+    }
+  };
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = `${circumference} ${circumference}`;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div 
+    <div
       className="circular-progress-container"
-      onClick={onClick}
-      style={{ 
-        width: size, 
+      onClick={handleManualSave}
+      style={{
+        width: size,
         height: size,
-        cursor: onClick ? 'pointer' : 'default'
+        cursor: 'pointer',
       }}
-      title={onClick ? `Cliquer pour sauvegarder maintenant. Prochaine sauvegarde dans ${timeRemaining || ''}` : undefined}
+      title={`Cliquer pour sauvegarder maintenant. Prochaine sauvegarde dans ${formattedTimeUntilNextSave}`}
     >
-      <svg
-        className="circular-progress-svg"
-        width={size}
-        height={size}
-      >
+      <svg className="circular-progress-svg" width={size} height={size}>
         {/* Background circle */}
         <circle
           className="circular-progress-background"
@@ -74,13 +73,11 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-          <polyline points="17,21 17,13 7,13 7,21"/>
-          <polyline points="7,3 7,8 15,8"/>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+          <polyline points="17,21 17,13 7,13 7,21" />
+          <polyline points="7,3 7,8 15,8" />
         </svg>
       </div>
     </div>
   );
-};
-
-export default CircularProgress;
+}
