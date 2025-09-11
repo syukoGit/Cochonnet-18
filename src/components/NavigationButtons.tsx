@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../store/hooks';
 import './NavigationButtons.css';
-import { PAGE_ORDER } from '../constants/routes';
+import { PAGE_ORDER } from '../constants/routes.ts';
 const NavigationButtons = () => {
   const navigate = useNavigate();
   const location = useLocation();
