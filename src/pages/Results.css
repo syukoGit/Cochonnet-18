@@ -1,0 +1,132 @@
+.results-wrapper {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.results-wrapper h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.results-wrapper h2 {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+  font-weight: normal;
+}
+
+.results-not-available {
+  text-align: center;
+  padding: 3rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.results-not-available p {
+  margin: 0.5rem 0;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.results-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .results-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.tournament-results {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.tournament-results h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #fe1b00;
+  padding-bottom: 0.5rem;
+}
+
+.podium {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.position {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.medal {
+  font-size: 2rem;
+  margin-right: 1rem;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.position-label {
+  font-weight: bold;
+  color: #333;
+  min-width: 5rem;
+  margin-right: 1rem;
+}
+
+.team-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.team-id {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: bold;
+}
+
+.team-name {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.no-result {
+  color: #999;
+  font-style: italic;
+}
+
+/* Special styling for first places */
+.position:first-child {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border-color: #ffd700;
+}
+
+.position:nth-child(2) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #c0c0c0;
+}
+
+.position:nth-child(3) {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+  border-color: #cd7f32;
+}
