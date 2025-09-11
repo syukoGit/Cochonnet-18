@@ -73,7 +73,7 @@ export function useAutoSave() {
 }
 
 /**
- * Format milliseconds to MM:SS format
+ * Format seconds to MM:SS format
  */
 function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
