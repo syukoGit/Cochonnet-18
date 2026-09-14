@@ -1,37 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import EventConfig from './pages/EventConfig';
-import Phase1 from './pages/Phase1';
-import Phase2 from './pages/Phase2';
-import Results from './pages/Results';
-import AutoSaveProgress from './components/AutoSaveProgress';
-import NavigationButtons from './components/NavigationButtons';
-import { useRouteTracking } from './hooks/useRouteTracking';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 
-function AppComponent() {
-  useRouteTracking();
-
+function Accueil() {
   return (
-    <>
-      <NavigationButtons />
-      <div className="global-auto-save-progress">
-        <AutoSaveProgress size={60} strokeWidth={4} />
-      </div>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/config" element={<EventConfig />} />
-        <Route path="/phase1" element={<Phase1 />} />
-        <Route path="/phase2" element={<Phase2 />} />
-        <Route path="/results" element={<Results />} />
-      </Routes>
-    </>
+    <main className="placeholder">
+      <h1>Cochonnet-18</h1>
+      <p>Lot 1 — fondations</p>
+    </main>
   );
 }
 
 export default function App() {
   return (
-    <Router>
-      <AppComponent />
-    </Router>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Accueil />} />
+      </Routes>
+    </HashRouter>
   );
 }

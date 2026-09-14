@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.web.tsbuildinfo",
     "target": "ES2022",
-    "lib": ["ES2023"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["node"],
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
     "moduleDetection": "force",
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,7 +19,9 @@
     "noUnusedParameters": true,
     "noUncheckedSideEffectImports": true,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["electron/**/*.ts", "electron.vite.config.ts", "vitest.config.ts"]
+  "include": ["src"]
 }

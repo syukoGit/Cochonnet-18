@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+out
 *.local
 
 # Electron build artifacts
@@ -28,3 +29,5 @@ release
 *.sw?
 
 codex-update.patch
+
+PLAN.md
