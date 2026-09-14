@@ -26,6 +26,8 @@ describe('tournament', () => {
       id: 't1',
       name: 'Tournoi',
       phase: 'configuration',
+      teams: [],
+      nextTeamId: 1,
       created: t0,
       modified: t0,
       opened: t0,

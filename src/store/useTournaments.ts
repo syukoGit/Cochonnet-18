@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
 import {
   byMostRecentlyOpened,
   createTournament,
   markOpened,
   renameTournament,
 } from '@/domain/tournament/tournament';
-import type { Tournament, TournamentId } from '@/domain/tournament/types';
+import type { TeamId, Tournament, TournamentId } from '@/domain/tournament/types';
 import type { UnreadableTournament } from '@/env';
 
 const WRITE_DEBOUNCE_MS = 500;
@@ -35,6 +36,9 @@ interface TournamentsState {
   open: (id: TournamentId) => void;
   rename: (id: TournamentId, name: string) => void;
   remove: (id: TournamentId) => Promise<void>;
+  addTeam: (name: string) => void;
+  renameTeam: (teamId: TeamId, name: string) => void;
+  removeTeam: (teamId: TeamId) => void;
 }
 
 function now(): string {
@@ -43,6 +47,37 @@ function now(): string {
 
 function newId(): TournamentId {
   return crypto.randomUUID();
+}
+
+type Setter = (recipe: (state: TournamentsState) => void) => void;
+type Getter = () => TournamentsState;
+
+function applyToCurrent(
+  set: Setter,
+  get: Getter,
+  change: (tournament: Tournament) => Tournament
+): void {
+  const current = get().current;
+
+  if (!current) {
+    return;
+  }
+
+  const updated = change(current);
+
+  if (updated === current) {
+    return;
+  }
+
+  scheduleWrite(updated);
+
+  set((state) => {
+    state.current = updated;
+    const index = state.list.findIndex((tournament) => tournament.id === updated.id);
+    if (index >= 0) {
+      state.list[index] = updated;
+    }
+  });
 }
 
 export const useTournaments = create<TournamentsState>()(
@@ -117,6 +152,18 @@ export const useTournaments = create<TournamentsState>()(
           state.current = renamed;
         }
       });
+    },
+
+    addTeam: (name) => {
+      applyToCurrent(set, get, (tournament) => addTeam(tournament, name, now()));
+    },
+
+    renameTeam: (teamId, name) => {
+      applyToCurrent(set, get, (tournament) => renameTeam(tournament, teamId, name, now()));
+    },
+
+    removeTeam: (teamId) => {
+      applyToCurrent(set, get, (tournament) => removeTeam(tournament, teamId, now()));
     },
 
     remove: async (id) => {
