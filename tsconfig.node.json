@@ -17,7 +17,15 @@
     "noUnusedParameters": true,
     "noUncheckedSideEffectImports": true,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["electron/**/*.ts", "electron.vite.config.ts", "vitest.config.ts"]
+  "include": [
+    "electron/**/*.ts",
+    "src/domain/**/*.ts",
+    "src/shared/**/*.ts",
+    "electron.vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-fond: var(--c-fond);
+  --color-surface: var(--c-surface);
+  --color-creux: var(--c-creux);
+  --color-encre: var(--c-encre);
+  --color-encre-douce: var(--c-encre-douce);
+  --color-encre-pale: var(--c-encre-pale);
+  --color-trait: var(--c-trait);
+  --color-trait-doux: var(--c-trait-doux);
+  --color-accent: var(--c-accent);
+  --color-accent-contraste: var(--c-accent-contraste);
+  --color-alerte: var(--c-alerte);
+  --color-alerte-fond: var(--c-alerte-fond);
+
+  --font-sans: system-ui, 'Segoe UI', sans-serif;
+  --radius-panneau: 4px;
+}
+
+:root {
+  --c-fond: #f1f3f5;
+  --c-surface: #ffffff;
+  --c-creux: #e7eaed;
+  --c-encre: #15181c;
+  --c-encre-douce: #5b636c;
+  --c-encre-pale: #8a929b;
+  --c-trait: #d7dce1;
+  --c-trait-doux: #e6eaee;
+  --c-accent: #c2180b;
+  --c-accent-contraste: #ffffff;
+  --c-alerte: #a8761a;
+  --c-alerte-fond: #faf2e2;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-fond: #101317;
+    --c-surface: #181c21;
+    --c-creux: #1f242a;
+    --c-encre: #e4e7ea;
+    --c-encre-douce: #9ba3ac;
+    --c-encre-pale: #6e777f;
+    --c-trait: #2b3138;
+    --c-trait-doux: #232830;
+    --c-accent: #ff5a48;
+    --c-accent-contraste: #16181b;
+    --c-alerte: #d7a340;
+    --c-alerte-fond: #272014;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-fond);
+  color: var(--c-encre);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input {
+  font: inherit;
+}

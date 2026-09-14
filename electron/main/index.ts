@@ -1,7 +1,31 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
+import type { Evenement } from '@/domain/event/types';
+import { schemaEvenement } from '@/shared/save/schema';
+import { ecrire, lire, lister, supprimer } from './depot';
 
 const rendererDevServerUrl = process.env.ELECTRON_RENDERER_URL;
+
+function repertoireDesEvenements(): string {
+  return join(app.getPath('userData'), 'events');
+}
+
+function enregistrerLesCanaux(): void {
+  ipcMain.handle('evenements:lister', () => lister(repertoireDesEvenements()));
+  ipcMain.handle('evenements:lire', (_event, id: string) => lire(repertoireDesEvenements(), id));
+  ipcMain.handle('evenements:supprimer', (_event, id: string) =>
+    supprimer(repertoireDesEvenements(), id)
+  );
+  ipcMain.handle('evenements:ecrire', (_event, candidat: unknown) => {
+    const analyse = schemaEvenement.safeParse(candidat);
+
+    if (!analyse.success) {
+      throw new Error("L'événement envoyé par l'interface ne respecte pas le schéma de sauvegarde");
+    }
+
+    return ecrire(repertoireDesEvenements(), analyse.data as Evenement);
+  });
+}
 
 function createWindow(): void {
   const window = new BrowserWindow({
@@ -12,6 +36,7 @@ function createWindow(): void {
     show: false,
     backgroundColor: '#f1f3f5',
     webPreferences: {
+      preload: join(import.meta.dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -38,6 +63,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  enregistrerLesCanaux();
   createWindow();
 
   app.on('activate', () => {

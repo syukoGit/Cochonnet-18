@@ -53,21 +53,25 @@ or renames a script updates this section in the same commit — a command docume
 than one that is missing.
 
 ```bash
-npm run dev              # dev server
-npm run electron-dev     # dev server + Electron, the normal development loop
-npm run build            # tsc -b then the renderer build
+npm run dev              # electron-vite dev, the application with HMR — the normal loop
+npm run test             # Vitest over the domain, runs in seconds
+npm run test:watch       # the same, in watch mode
+npm run typecheck        # tsc -b across the electron and renderer projects
 npm run lint             # eslint over the whole tree
-npm run build-electron   # run the production build inside Electron
+npm run format           # prettier over everything but the Markdown
+npm run build            # typecheck then electron-vite build into out/
 npm run dist-win         # NSIS installer into release/
 ```
 
-`dist`, `dist-mac` and `dist-linux` build the other targets; `electron` and `preview` are the pieces the composite
-scripts call and are rarely useful on their own.
+`preview` runs the built output inside Electron, and `dist` builds the current platform's target; both are rarely
+useful on their own.
 
-There is **no test command yet**. Until one exists, no change is verified — say so plainly rather than reporting a
-feature as done. The domain suite is meant to run in seconds and carry the whole regression net, so once it lands
-there is no reason to skip it; the end-to-end run is reserved for what genuinely needs the real application — a full
-tournament, a brutal close, and the reopen that must resume it.
+The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
+`src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
+absence of a DOM is deliberate, and it is a second guard on the purity of `src/domain`.
+
+The fourteen invariants are not all in place yet. Until one lands, the rule it pins down is verified by nothing, and
+a change checked only by running the application should be reported as exactly that.
 
 ## Architecture
 
