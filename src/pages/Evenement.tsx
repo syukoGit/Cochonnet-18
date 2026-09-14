@@ -17,7 +17,7 @@ export default function Evenement() {
 
   useEffect(() => {
     if (id && courant?.id !== id && liste.some((evenement) => evenement.id === id)) {
-      void ouvrir(id);
+      ouvrir(id);
     }
   }, [id, courant, liste, ouvrir]);
 
@@ -28,7 +28,12 @@ export default function Evenement() {
           <p className="text-encre-douce">
             Ce tournoi n&apos;existe plus, ou son fichier est illisible.
           </p>
-          <Bouton className="mt-4" onClick={() => navigate('/')}>
+          <Bouton
+            className="mt-4"
+            onClick={() => {
+              void navigate('/');
+            }}
+          >
             Retour aux tournois
           </Bouton>
         </div>
@@ -40,7 +45,15 @@ export default function Evenement() {
     <Shell
       titre={courant?.nom ?? 'Tournoi'}
       sousTitre="Configuration"
-      actions={<Bouton onClick={() => navigate('/')}>Tournois</Bouton>}
+      actions={
+        <Bouton
+          onClick={() => {
+            void navigate('/');
+          }}
+        >
+          Tournois
+        </Bouton>
+      }
     >
       <div className="mx-auto w-full max-w-3xl">
         <div className="rounded-panneau border border-dashed border-trait p-10 text-center">

@@ -43,10 +43,12 @@ function createWindow(): void {
     },
   });
 
-  window.once('ready-to-show', () => window.show());
+  window.once('ready-to-show', () => {
+    window.show();
+  });
 
   window.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    void shell.openExternal(url);
     return { action: 'deny' };
   });
 
@@ -55,14 +57,14 @@ function createWindow(): void {
   });
 
   if (rendererDevServerUrl) {
-    window.loadURL(rendererDevServerUrl);
+    void window.loadURL(rendererDevServerUrl);
     window.webContents.openDevTools({ mode: 'detach' });
   } else {
-    window.loadFile(join(import.meta.dirname, '../renderer/index.html'));
+    void window.loadFile(join(import.meta.dirname, '../renderer/index.html'));
   }
 }
 
-app.whenReady().then(() => {
+void app.whenReady().then(() => {
   enregistrerLesCanaux();
   createWindow();
 

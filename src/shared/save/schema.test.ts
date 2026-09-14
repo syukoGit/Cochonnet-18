@@ -25,7 +25,7 @@ describe('schéma de sauvegarde', () => {
   it('refuse un fichier qui n est pas du JSON', () => {
     const resultat = lireSauvegarde('{ ceci nest pas du json');
     expect(resultat.ok).toBe(false);
-    expect(resultat.ok === false && resultat.echec.motif).toBe('json-invalide');
+    expect(!resultat.ok && resultat.echec.motif).toBe('json-invalide');
   });
 
   it('refuse un JSON valide dont le schéma est faux', () => {
@@ -33,18 +33,18 @@ describe('schéma de sauvegarde', () => {
       sauvegarde({ version: VERSION_SAUVEGARDE, evenement: { ...evenement, phase: 'inconnue' } })
     );
     expect(resultat.ok).toBe(false);
-    expect(resultat.ok === false && resultat.echec.motif).toBe('schema-invalide');
+    expect(!resultat.ok && resultat.echec.motif).toBe('schema-invalide');
   });
 
   it('refuse une version de sauvegarde inconnue', () => {
     const resultat = lireSauvegarde(sauvegarde({ version: 99, evenement }));
     expect(resultat.ok).toBe(false);
-    expect(resultat.ok === false && resultat.echec.motif).toBe('version-inconnue');
+    expect(!resultat.ok && resultat.echec.motif).toBe('version-inconnue');
   });
 
   it('accepte une sauvegarde complète', () => {
     const resultat = lireSauvegarde(sauvegarde({ version: VERSION_SAUVEGARDE, evenement }));
     expect(resultat.ok).toBe(true);
-    expect(resultat.ok === true && resultat.sauvegarde.evenement).toEqual(evenement);
+    expect(resultat.ok && resultat.sauvegarde.evenement).toEqual(evenement);
   });
 });

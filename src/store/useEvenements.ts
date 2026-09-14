@@ -25,12 +25,6 @@ function planifierEcriture(evenement: Evenement): void {
   );
 }
 
-export async function viderLaFileDEcriture(): Promise<void> {
-  const enAttente = [...minuteries.values()];
-  minuteries.clear();
-  enAttente.forEach(clearTimeout);
-}
-
 interface EtatEvenements {
   liste: Evenement[];
   illisibles: EvenementIllisible[];
@@ -38,7 +32,7 @@ interface EtatEvenements {
   chargement: boolean;
   charger: () => Promise<void>;
   creer: (nom: string) => Promise<EventId>;
-  ouvrir: (id: EventId) => Promise<void>;
+  ouvrir: (id: EventId) => void;
   renommer: (id: EventId, nom: string) => void;
   supprimer: (id: EventId) => Promise<void>;
 }
@@ -80,7 +74,7 @@ export const useEvenements = create<EtatEvenements>()(
       return evenement.id;
     },
 
-    ouvrir: async (id) => {
+    ouvrir: (id) => {
       const trouve = get().liste.find((evenement) => evenement.id === id);
 
       if (!trouve) {

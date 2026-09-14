@@ -42,12 +42,12 @@ export default function Accueil() {
     const id = await creer(nouveauNom);
     setNouveauNom('');
     setCreationOuverte(false);
-    navigate(`/evenement/${id}`);
+    void navigate(`/evenement/${id}`);
   };
 
-  const ouvrirEvenement = async (id: EventId) => {
-    await ouvrir(id);
-    navigate(`/evenement/${id}`);
+  const ouvrirEvenement = (id: EventId) => {
+    ouvrir(id);
+    void navigate(`/evenement/${id}`);
   };
 
   const confirmerSuppression = async () => {
@@ -62,7 +62,12 @@ export default function Accueil() {
       titre="Cochonnet-18"
       sousTitre="Tournois"
       actions={
-        <Bouton ton="principal" onClick={() => setCreationOuverte(true)}>
+        <Bouton
+          ton="principal"
+          onClick={() => {
+            setCreationOuverte(true);
+          }}
+        >
           Nouveau tournoi
         </Bouton>
       }
@@ -103,7 +108,9 @@ export default function Accueil() {
               <li key={evenement.id} className="flex items-center gap-4 px-4 py-3">
                 <button
                   type="button"
-                  onClick={() => void ouvrirEvenement(evenement.id)}
+                  onClick={() => {
+                    ouvrirEvenement(evenement.id);
+                  }}
                   className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   <span className="block truncate font-medium">{evenement.nom}</span>
@@ -111,8 +118,19 @@ export default function Accueil() {
                     {LIBELLE_PHASE[evenement.phase]} · modifié le {formaterDate(evenement.modifie)}
                   </span>
                 </button>
-                <Bouton onClick={() => void ouvrirEvenement(evenement.id)}>Ouvrir</Bouton>
-                <Bouton ton="danger" onClick={() => setASupprimer(evenement)}>
+                <Bouton
+                  onClick={() => {
+                    ouvrirEvenement(evenement.id);
+                  }}
+                >
+                  Ouvrir
+                </Bouton>
+                <Bouton
+                  ton="danger"
+                  onClick={() => {
+                    setASupprimer(evenement);
+                  }}
+                >
                   Supprimer
                 </Bouton>
               </li>
@@ -128,11 +146,19 @@ export default function Accueil() {
         description="Donne-lui un nom ; tu pourras le changer plus tard."
         actions={
           <>
-            <Bouton onClick={() => setCreationOuverte(false)}>Annuler</Bouton>
+            <Bouton
+              onClick={() => {
+                setCreationOuverte(false);
+              }}
+            >
+              Annuler
+            </Bouton>
             <Bouton
               ton="principal"
               disabled={!nomEvenementValide(nouveauNom)}
-              onClick={() => void validerCreation()}
+              onClick={() => {
+                void validerCreation();
+              }}
             >
               Créer
             </Bouton>
@@ -142,8 +168,14 @@ export default function Accueil() {
         <input
           autoFocus
           value={nouveauNom}
-          onChange={(event) => setNouveauNom(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && void validerCreation()}
+          onChange={(event) => {
+            setNouveauNom(event.target.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              void validerCreation();
+            }
+          }}
           placeholder="Tournoi du 14 septembre"
           className="w-full rounded-panneau border border-trait bg-fond px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
@@ -151,7 +183,11 @@ export default function Accueil() {
 
       <Dialogue
         ouvert={aSupprimer !== null}
-        surFermeture={(ouvert) => !ouvert && setASupprimer(null)}
+        surFermeture={(ouvert) => {
+          if (!ouvert) {
+            setASupprimer(null);
+          }
+        }}
         titre="Supprimer ce tournoi ?"
         description={
           aSupprimer
@@ -160,8 +196,19 @@ export default function Accueil() {
         }
         actions={
           <>
-            <Bouton onClick={() => setASupprimer(null)}>Annuler</Bouton>
-            <Bouton ton="principal" onClick={() => void confirmerSuppression()}>
+            <Bouton
+              onClick={() => {
+                setASupprimer(null);
+              }}
+            >
+              Annuler
+            </Bouton>
+            <Bouton
+              ton="principal"
+              onClick={() => {
+                void confirmerSuppression();
+              }}
+            >
               Supprimer
             </Bouton>
           </>

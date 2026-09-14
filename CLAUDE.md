@@ -54,17 +54,24 @@ than one that is missing.
 
 ```bash
 npm run dev              # electron-vite dev, the application with HMR — the normal loop
-npm run test             # Vitest over the domain, runs in seconds
+npm run verifier         # everything CI runs, in CI's order — the one to run before a commit
+npm run test             # Vitest, runs in seconds
 npm run test:watch       # the same, in watch mode
+npm run test:coverage    # the same, with the coverage thresholds enforced
 npm run typecheck        # tsc -b across the electron and renderer projects
-npm run lint             # eslint over the whole tree
+npm run lint             # eslint with --max-warnings 0
 npm run format           # prettier over everything but the Markdown
+npm run format:check     # the same, without writing — fails instead
 npm run build            # typecheck then electron-vite build into out/
 npm run dist-win         # NSIS installer into release/
 ```
 
 `preview` runs the built output inside Electron, and `dist` builds the current platform's target; both are rarely
 useful on their own.
+
+**`npm run verifier` is the contract with CI.** It chains format, lint, types, coverage and build in the same order
+as the `verifier` job, so a green run locally means a green run on GitHub. CI adds one thing it cannot: on `main` and
+on tags it builds the Windows installer and **fails if the asar contains `node_modules`**.
 
 The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
 `src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
