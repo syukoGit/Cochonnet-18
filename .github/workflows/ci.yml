@@ -1,16 +1,16 @@
 name: CI
 
 on:
-  push:
-    branches: ['**']
-    tags: ['v*']
   pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:

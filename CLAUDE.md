@@ -86,6 +86,10 @@ useful on their own.
 thing it cannot: on `main` and on tags, a sixth job builds the Windows installer and **fails if the asar contains
 `node_modules`**.
 
+**CI runs on pull requests, and on pushes to `main` and to tags — never on a branch push.** A branch push and its
+pull request would otherwise fire the same run twice. The consequence is that work on a branch with no open pull
+request gets no CI at all, so `npm run verify` before a commit is not a nicety, it is the only check that runs.
+
 The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
 `src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
 absence of a DOM is deliberate, and it is a second guard on the purity of `src/domain`.
