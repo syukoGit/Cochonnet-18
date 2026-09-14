@@ -59,7 +59,7 @@ export default tseslint.config([
   globalIgnores(['out', 'release', 'dist', 'node_modules', 'build', 'coverage']),
 
   {
-    files: ['**/*.{js,ts,tsx}'],
+    files: ['**/*.{js,mjs,ts,tsx}'],
     plugins: { cochonnet },
     extends: [js.configs.recommended],
     rules: {
@@ -76,7 +76,10 @@ export default tseslint.config([
     files: ['**/*.{ts,tsx}'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: {
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.web.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': [
@@ -151,8 +154,9 @@ export default tseslint.config([
   },
 
   {
-    files: ['eslint.config.js'],
+    files: ['eslint.config.js', 'scripts/**/*.mjs'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
+    rules: { 'no-console': 'off' },
   },
 ]);

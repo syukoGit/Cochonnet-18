@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_SETTINGS } from './settings';
 import {
   byMostRecentlyOpened,
   createTournament,
@@ -28,6 +29,9 @@ describe('tournament', () => {
       phase: 'configuration',
       teams: [],
       nextTeamId: 1,
+      matchCount: 3,
+      settings: DEFAULT_SETTINGS,
+      matches: [],
       created: t0,
       modified: t0,
       opened: t0,

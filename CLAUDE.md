@@ -35,10 +35,19 @@ of the logic, and name the concept after the English word even when the spec nam
 ## Environment
 
 - **Node 26**, npm 11. Windows development machine; PowerShell is the primary shell, Git Bash is available.
+- **Electron 37** ships **Node 22.18** in the main process and **Chromium 138** in the renderer. Both provide every
+  API `ESNext` declares in TypeScript 6 — measured, not assumed, down to `Float16Array` and `RegExp.escape` — which
+  is why `lib` is `ESNext` on both sides rather than a pinned year. `lib` describes what the runtime offers, not what
+  the code happens to call today.
+- **TypeScript 6.0**, and not 7.0 even though it is published: `typescript-eslint` caps at `typescript <6.1.0`, so
+  TypeScript 7 would silently disable the strictest guard in the project. Revisit when that peer range moves.
 - **electron-vite** drives the build: main, preload and renderer are bundled together, TypeScript on both sides, with
   HMR on the renderer. `electron-builder` produces the installers.
-- **React 19** and **TypeScript** in `strict` mode, with `noUnusedLocals`, `noUnusedParameters` and
-  `noUncheckedSideEffectImports`. `tsc` and `eslint` pass clean — keep them that way.
+- **React 19** and **TypeScript** in `strict` mode, with `noUnusedLocals`, `noUnusedParameters`,
+  `noUncheckedSideEffectImports` and **`noUncheckedIndexedAccess`**. The last one matters more than it looks: the
+  domain is built on array indexing — the circle method, the brackets — and without it `seats[i]` claims to always
+  hold a value, which turns every defensive check into dead code the linter then asks you to delete. `tsc` and
+  `eslint` pass clean — keep them that way.
 - **Zustand + Immer** for state, **Zod** for versioned save schemas, **Vitest + fast-check** for the domain,
   **Playwright** for the end-to-end run, **Tailwind v4 + Radix** for the interface.
 
@@ -72,6 +81,7 @@ npm run test:watch       # the same, in watch mode
 npm run test:coverage    # the same, with the coverage thresholds enforced
 npm run typecheck        # tsc -b across the electron and renderer projects
 npm run lint             # eslint with --max-warnings 0
+npm run check:cycles     # refuses any import cycle across src/ and electron/
 npm run format           # prettier over everything but the Markdown
 npm run format:check     # the same, without writing — fails instead
 npm run build            # typecheck then electron-vite build into out/
@@ -81,8 +91,9 @@ npm run dist-win         # NSIS installer into release/
 `preview` runs the built output inside Electron, and `dist` builds the current platform's target; both are rarely
 useful on their own.
 
-**`npm run verify` is the contract with CI.** It chains the same five checks that CI runs as five parallel jobs —
-`format`, `lint`, `typecheck`, `test`, `build` — so a green run locally means a green run on GitHub. CI adds one
+**`npm run verify` is the contract with CI.** It chains the same checks that CI runs as five parallel jobs —
+`format`, `lint` (which also runs `check:cycles`), `typecheck`, `test`, `build` — so a green run locally means a
+green run on GitHub. CI adds one
 thing it cannot: on `main` and on tags, a sixth job builds the Windows installer and **fails if the asar contains
 `node_modules`**.
 
@@ -93,6 +104,19 @@ request gets no CI at all, so `npm run verify` before a commit is not a nicety, 
 The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
 `src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
 absence of a DOM is deliberate, and it is a second guard on the purity of `src/domain`.
+
+**typescript-eslint is pointed at the two project files explicitly**, not left to discover them. The root
+`tsconfig.json` is solution-style — `files: []` plus `references` — so it contains no file of its own; with
+`projectService`, the editor's language server and the CLI could pick different programs for the same file and
+disagree about its types. `project: ['./tsconfig.node.json', './tsconfig.web.json']` makes both resolve the same way.
+When the editor and `npx eslint <file>` disagree, **the CLI is the authority** — restart the ESLint server before
+believing the editor, especially after a TypeScript or config change.
+
+**An import cycle is refused.** `src/domain/tournament/types.ts` and `src/domain/match/types.ts` once imported each
+other; the CLI resolved it fine and the editor's language server resolved the types to `error`, so `npm run lint`
+passed while the editor reported nonsense on three unrelated lines. Shared identifiers live in
+[`src/domain/ids.ts`](src/domain/ids.ts), which imports nothing — put a new `…Id` there rather than in the module
+that happens to own the concept.
 
 The fourteen invariants are not all in place yet. Until one lands, the rule it pins down is verified by nothing, and
 a change checked only by running the application should be reported as exactly that.
@@ -143,6 +167,9 @@ team that played no further match. The flat shape makes that class of bug unwrit
 
 A stored result is **locked** (R4.12). Unlocking is an explicit action that names, before confirming, every match it
 will erase.
+
+That shape is the **target**. Fields land in the slice that first reads them, so at any point the `Match` on disk may
+carry fewer of them than this block shows — check `src/domain/match/types.ts` rather than assuming.
 
 ### The two algorithms
 

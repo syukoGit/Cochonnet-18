@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { startPhase1 } from '@/domain/phase1/start';
 import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
+import type { Settings } from '@/domain/tournament/settings';
 import {
   byMostRecentlyOpened,
   createTournament,
@@ -39,6 +41,9 @@ interface TournamentsState {
   addTeam: (name: string) => void;
   renameTeam: (teamId: TeamId, name: string) => void;
   removeTeam: (teamId: TeamId) => void;
+  setMatchCount: (matchCount: number) => void;
+  setSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+  startPhase1: () => void;
 }
 
 function now(): string {
@@ -47,6 +52,10 @@ function now(): string {
 
 function newId(): TournamentId {
   return crypto.randomUUID();
+}
+
+function drawSeed(): number {
+  return crypto.getRandomValues(new Uint32Array(1))[0] ?? 0;
 }
 
 type Setter = (recipe: (state: TournamentsState) => void) => void;
@@ -164,6 +173,30 @@ export const useTournaments = create<TournamentsState>()(
 
     removeTeam: (teamId) => {
       applyToCurrent(set, get, (tournament) => removeTeam(tournament, teamId, now()));
+    },
+
+    setMatchCount: (matchCount) => {
+      applyToCurrent(set, get, (tournament) =>
+        tournament.matchCount === matchCount
+          ? tournament
+          : { ...tournament, matchCount, modified: now() }
+      );
+    },
+
+    setSetting: (key, value) => {
+      applyToCurrent(set, get, (tournament) =>
+        tournament.settings[key] === value
+          ? tournament
+          : {
+              ...tournament,
+              settings: { ...tournament.settings, [key]: value },
+              modified: now(),
+            }
+      );
+    },
+
+    startPhase1: () => {
+      applyToCurrent(set, get, (tournament) => startPhase1(tournament, drawSeed(), now()));
     },
 
     remove: async (id) => {

@@ -51,7 +51,7 @@ export default function TeamRow({ team, issueOf, onRename, onRemove }: TeamRowPr
               setDraft(team.name);
             }
           }}
-          aria-label={`Nom de l’équipe ${team.id}`}
+          aria-label={`Nom de l'équipe ${team.id}`}
           className="w-full rounded-panel border border-transparent bg-transparent px-3 py-2 hover:border-line focus-visible:border-line focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
         {issue && <p className="mt-1 px-3 text-sm text-warning">{ISSUE_MESSAGES[issue]}</p>}

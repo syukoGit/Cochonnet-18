@@ -1,8 +1,8 @@
-export type TournamentId = string;
+import type { TeamId, Timestamp, TournamentId } from '@/domain/ids';
+import type { Match } from '@/domain/match/types';
+import type { Settings } from './settings';
 
-export type TeamId = number;
-
-export type Timestamp = string;
+export type { TeamId, Timestamp, TournamentId };
 
 export const PHASES = ['configuration', 'phase1', 'closing', 'phase2', 'results'] as const;
 
@@ -19,6 +19,9 @@ export interface Tournament {
   phase: Phase;
   teams: Team[];
   nextTeamId: TeamId;
+  matchCount: number;
+  settings: Settings;
+  matches: Match[];
   created: Timestamp;
   modified: Timestamp;
   opened: Timestamp;
