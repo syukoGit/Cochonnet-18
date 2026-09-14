@@ -1,29 +1,27 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
-import type { Evenement } from '@/domain/event/types';
-import { schemaEvenement } from '@/shared/save/schema';
-import { ecrire, lire, lister, supprimer } from './depot';
+import type { Tournament } from '@/domain/tournament/types';
+import { tournamentSchema } from '@/shared/save/schema';
+import { list, read, remove, write } from './repository';
 
 const rendererDevServerUrl = process.env.ELECTRON_RENDERER_URL;
 
-function repertoireDesEvenements(): string {
-  return join(app.getPath('userData'), 'events');
+function tournamentsDirectory(): string {
+  return join(app.getPath('userData'), 'tournaments');
 }
 
-function enregistrerLesCanaux(): void {
-  ipcMain.handle('evenements:lister', () => lister(repertoireDesEvenements()));
-  ipcMain.handle('evenements:lire', (_event, id: string) => lire(repertoireDesEvenements(), id));
-  ipcMain.handle('evenements:supprimer', (_event, id: string) =>
-    supprimer(repertoireDesEvenements(), id)
-  );
-  ipcMain.handle('evenements:ecrire', (_event, candidat: unknown) => {
-    const analyse = schemaEvenement.safeParse(candidat);
+function registerChannels(): void {
+  ipcMain.handle('tournaments:list', () => list(tournamentsDirectory()));
+  ipcMain.handle('tournaments:read', (_event, id: string) => read(tournamentsDirectory(), id));
+  ipcMain.handle('tournaments:remove', (_event, id: string) => remove(tournamentsDirectory(), id));
+  ipcMain.handle('tournaments:write', (_event, candidate: unknown) => {
+    const parsed = tournamentSchema.safeParse(candidate);
 
-    if (!analyse.success) {
-      throw new Error("L'événement envoyé par l'interface ne respecte pas le schéma de sauvegarde");
+    if (!parsed.success) {
+      throw new Error('The tournament sent by the renderer does not match the save schema');
     }
 
-    return ecrire(repertoireDesEvenements(), analyse.data as Evenement);
+    return write(tournamentsDirectory(), parsed.data as Tournament);
   });
 }
 
@@ -65,7 +63,7 @@ function createWindow(): void {
 }
 
 void app.whenReady().then(() => {
-  enregistrerLesCanaux();
+  registerChannels();
   createWindow();
 
   app.on('activate', () => {

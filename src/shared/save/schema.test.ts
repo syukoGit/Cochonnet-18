@@ -1,50 +1,50 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
-import { creerEvenement } from '@/domain/event/evenement';
-import type { Evenement } from '@/domain/event/types';
-import { lireSauvegarde, schemaEvenement, VERSION_SAUVEGARDE } from './schema';
+import { createTournament } from '@/domain/tournament/tournament';
+import type { Tournament } from '@/domain/tournament/types';
+import { readSave, SAVE_VERSION, tournamentSchema } from './schema';
 
 type Equivalent<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-const leSchemaDecritLeType: Equivalent<z.infer<typeof schemaEvenement>, Evenement> = true;
+const schemaDescribesTheDomainType: Equivalent<z.infer<typeof tournamentSchema>, Tournament> = true;
 
-const evenement = creerEvenement('e1', 'Tournoi du 14 septembre', '2026-09-14T09:00:00.000Z');
+const tournament = createTournament('t1', 'Tournoi du 14 septembre', '2026-09-14T09:00:00.000Z');
 
-const sauvegarde = (contenu: unknown) => JSON.stringify(contenu);
+const saved = (contents: unknown) => JSON.stringify(contents);
 
-describe('schéma de sauvegarde', () => {
-  it('décrit exactement les champs du type du domaine', () => {
-    expect(leSchemaDecritLeType).toBe(true);
-    expect(Object.keys(schemaEvenement.shape).sort()).toEqual(Object.keys(evenement).sort());
+describe('save schema', () => {
+  it('describes exactly the fields of the domain type', () => {
+    expect(schemaDescribesTheDomainType).toBe(true);
+    expect(Object.keys(tournamentSchema.shape).sort()).toEqual(Object.keys(tournament).sort());
   });
 
-  it('accepte un événement produit par le domaine', () => {
-    expect(schemaEvenement.safeParse(evenement).success).toBe(true);
+  it('accepts a tournament produced by the domain', () => {
+    expect(tournamentSchema.safeParse(tournament).success).toBe(true);
   });
 
-  it('refuse un fichier qui n est pas du JSON', () => {
-    const resultat = lireSauvegarde('{ ceci nest pas du json');
-    expect(resultat.ok).toBe(false);
-    expect(!resultat.ok && resultat.echec.motif).toBe('json-invalide');
+  it('rejects a file that is not JSON', () => {
+    const result = readSave('{ this is not json');
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.failure.reason).toBe('invalid-json');
   });
 
-  it('refuse un JSON valide dont le schéma est faux', () => {
-    const resultat = lireSauvegarde(
-      sauvegarde({ version: VERSION_SAUVEGARDE, evenement: { ...evenement, phase: 'inconnue' } })
+  it('rejects valid JSON that does not match the schema', () => {
+    const result = readSave(
+      saved({ version: SAVE_VERSION, tournament: { ...tournament, phase: 'unknown' } })
     );
-    expect(resultat.ok).toBe(false);
-    expect(!resultat.ok && resultat.echec.motif).toBe('schema-invalide');
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.failure.reason).toBe('invalid-schema');
   });
 
-  it('refuse une version de sauvegarde inconnue', () => {
-    const resultat = lireSauvegarde(sauvegarde({ version: 99, evenement }));
-    expect(resultat.ok).toBe(false);
-    expect(!resultat.ok && resultat.echec.motif).toBe('version-inconnue');
+  it('rejects an unknown save version', () => {
+    const result = readSave(saved({ version: 99, tournament }));
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.failure.reason).toBe('unknown-version');
   });
 
-  it('accepte une sauvegarde complète', () => {
-    const resultat = lireSauvegarde(sauvegarde({ version: VERSION_SAUVEGARDE, evenement }));
-    expect(resultat.ok).toBe(true);
-    expect(resultat.ok && resultat.sauvegarde.evenement).toEqual(evenement);
+  it('accepts a complete save', () => {
+    const result = readSave(saved({ version: SAVE_VERSION, tournament }));
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.save.tournament).toEqual(tournament);
   });
 });

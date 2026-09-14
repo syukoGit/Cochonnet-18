@@ -18,7 +18,19 @@ runs, from the phase 1 draw to the final podium. **Read it before planning any f
 project is built to prevent. §9 of that file lists what was examined and deliberately left out of scope — printing,
 terrain assignment, timed games, seeded brackets, team rosters. Do not reopen those in an implementation task.
 
-`REGLES.md` is written in French; **the code, the identifiers and the commit messages are English**. The UI is French.
+`REGLES.md` is written in French. **The code is English without exception** — identifiers, file names, design tokens,
+test descriptions, IPC channels, commit messages. **Only what the organiser reads is French.** Keep those strings out
+of the logic, and name the concept after the English word even when the spec names it in French:
+
+| `REGLES.md` | code |
+|---|---|
+| événement | `Tournament` — never `Event`, which shadows the DOM global |
+| tour | `round` |
+| exemption | `bye` |
+| forfait | `forfeit` |
+| consolante | `consolation` |
+| différentiel | `differential` |
+| clôture | `closing` |
 
 ## Environment
 
@@ -54,7 +66,7 @@ than one that is missing.
 
 ```bash
 npm run dev              # electron-vite dev, the application with HMR — the normal loop
-npm run verifier         # everything CI runs, in CI's order — the one to run before a commit
+npm run verify           # everything CI runs — the one to run before a commit
 npm run test             # Vitest, runs in seconds
 npm run test:watch       # the same, in watch mode
 npm run test:coverage    # the same, with the coverage thresholds enforced
@@ -69,9 +81,10 @@ npm run dist-win         # NSIS installer into release/
 `preview` runs the built output inside Electron, and `dist` builds the current platform's target; both are rarely
 useful on their own.
 
-**`npm run verifier` is the contract with CI.** It chains format, lint, types, coverage and build in the same order
-as the `verifier` job, so a green run locally means a green run on GitHub. CI adds one thing it cannot: on `main` and
-on tags it builds the Windows installer and **fails if the asar contains `node_modules`**.
+**`npm run verify` is the contract with CI.** It chains the same five checks that CI runs as five parallel jobs —
+`format`, `lint`, `typecheck`, `test`, `build` — so a green run locally means a green run on GitHub. CI adds one
+thing it cannot: on `main` and on tags, a sixth job builds the Windows installer and **fails if the asar contains
+`node_modules`**.
 
 The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
 `src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
@@ -110,16 +123,16 @@ A knockout bracket is **not a tree**. It is a flat list of matches joined by exp
 
 ```
 Match = {
-  id, phase, tour
+  id, phase, round
   slots: [Slot, Slot]        team, bye, or "winner of M12"
   score?: [number, number]
-  statut: waiting | in_progress | played | forfeit
-  alimente?: { match, slot }
-  alimenteConsolante?: { match, slot }
+  status: waiting | in_progress | played | forfeit
+  feeds?: { match, slot }
+  feedsConsolation?: { match, slot }
 }
 ```
 
-Entering a result is a pure function `appliquerResultat(tournoi, matchId, score) → tournoi`. Because the outgoing links
+Entering a result is a pure function `applyResult(tournament, matchId, score) → tournament`. Because the outgoing links
 are explicit, it walks downstream and **clears every dependent match before injecting the new qualifier** (R4.11). A
 tree mutated in place cannot do that: it propagates a winner upward and leaves stale results behind, which crowns a
 team that played no further match. The flat shape makes that class of bug unwritable.
@@ -158,8 +171,8 @@ gap by one from an insufficient gap, so it cannot overshoot.
 
 ### Persistence
 
-**One event is one JSON file**, in an events directory under `app.getPath('userData')` (R6.1). The home screen is the
-list of those events (R6.6, R7.1); creating a tournament destroys nothing, and last season's is still there with its
+**One tournament is one JSON file**, in a `tournaments/` directory under `app.getPath('userData')` (R6.1). The home
+screen is the list of them (R6.6, R7.1); creating one destroys nothing, and last season's is still there with its
 podium. Each file stands alone — an unreadable one must not keep the others from opening (`I14`).
 
 Writes are **atomic** — temporary file then rename — on every mutation with a 500 ms debounce (R6.2, R6.3). Not
@@ -190,8 +203,9 @@ lock, with nothing confirmed and nothing shown.
   Effects belong in effects.
 - Domain functions are **pure and total**: same input, same output, no throw on a foreseeable case. A tournament that
   cannot have a third place returns no third place (R4.15); it does not raise.
-- The UI is French, the code is English. Keep user-facing strings out of components and reference them by key. The
-  vocabulary of `REGLES.md` is authoritative for both: *tour*, *exemption*, *forfait*, *consolante*, *différentiel*.
+- The UI is French, the code is English. Keep user-facing strings out of the logic. The glossary in Project maps the
+  spec's French vocabulary onto the English identifiers; it is authoritative, so a new concept gets its row there
+  before it gets a name in the code.
 - **The fourteen invariants are the executable spec.** Write them before the feature. `I1` to `I3` and `I7` are
   property-based (fast-check) over every team count from 2 to 64 and every valid match count — a draw is not verified
   by inspecting one example.

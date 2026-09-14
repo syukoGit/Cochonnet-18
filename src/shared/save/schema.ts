@@ -1,61 +1,60 @@
 import { z } from 'zod';
-import { PHASES } from '@/domain/event/types';
+import { PHASES } from '@/domain/tournament/types';
 
-export const VERSION_SAUVEGARDE = 1;
+export const SAVE_VERSION = 1;
 
-export const schemaEvenement = z.object({
+export const tournamentSchema = z.object({
   id: z.string().min(1),
-  nom: z.string().min(1),
+  name: z.string().min(1),
   phase: z.enum(PHASES),
-  cree: z.string().min(1),
-  modifie: z.string().min(1),
-  ouvert: z.string().min(1),
+  created: z.string().min(1),
+  modified: z.string().min(1),
+  opened: z.string().min(1),
 });
 
-export const schemaSauvegarde = z.object({
-  version: z.literal(VERSION_SAUVEGARDE),
-  evenement: schemaEvenement,
+export const saveSchema = z.object({
+  version: z.literal(SAVE_VERSION),
+  tournament: tournamentSchema,
 });
 
-export type Sauvegarde = z.infer<typeof schemaSauvegarde>;
+export type Save = z.infer<typeof saveSchema>;
 
-export type EchecDeLecture =
-  | { motif: 'json-invalide'; detail: string }
-  | { motif: 'schema-invalide'; detail: string }
-  | { motif: 'version-inconnue'; detail: string };
+export type ReadFailure =
+  | { reason: 'invalid-json'; detail: string }
+  | { reason: 'invalid-schema'; detail: string }
+  | { reason: 'unknown-version'; detail: string };
 
-export type ResultatDeLecture =
-  { ok: true; sauvegarde: Sauvegarde } | { ok: false; echec: EchecDeLecture };
+export type ReadResult = { ok: true; save: Save } | { ok: false; failure: ReadFailure };
 
-export function lireSauvegarde(contenu: string): ResultatDeLecture {
-  let brut: unknown;
+export function readSave(contents: string): ReadResult {
+  let raw: unknown;
 
   try {
-    brut = JSON.parse(contenu);
-  } catch (erreur) {
-    return { ok: false, echec: { motif: 'json-invalide', detail: String(erreur) } };
+    raw = JSON.parse(contents);
+  } catch (error) {
+    return { ok: false, failure: { reason: 'invalid-json', detail: String(error) } };
   }
 
-  const versionLue = (brut as { version?: unknown } | null)?.version;
+  const version = (raw as { version?: unknown } | null)?.version;
 
-  if (typeof versionLue === 'number' && versionLue !== VERSION_SAUVEGARDE) {
+  if (typeof version === 'number' && version !== SAVE_VERSION) {
     return {
       ok: false,
-      echec: {
-        motif: 'version-inconnue',
-        detail: `version ${versionLue}, attendue ${VERSION_SAUVEGARDE}`,
+      failure: {
+        reason: 'unknown-version',
+        detail: `version ${version}, expected ${SAVE_VERSION}`,
       },
     };
   }
 
-  const analyse = schemaSauvegarde.safeParse(brut);
+  const parsed = saveSchema.safeParse(raw);
 
-  if (!analyse.success) {
+  if (!parsed.success) {
     return {
       ok: false,
-      echec: { motif: 'schema-invalide', detail: z.prettifyError(analyse.error) },
+      failure: { reason: 'invalid-schema', detail: z.prettifyError(parsed.error) },
     };
   }
 
-  return { ok: true, sauvegarde: analyse.data };
+  return { ok: true, save: parsed.data };
 }

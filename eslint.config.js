@@ -5,27 +5,27 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { globalIgnores } from 'eslint/config';
 
-const COMMENTAIRES_TOLERES = /^\s*(eslint-|prettier-|@ts-|\/\s*<reference)/;
+const TOLERATED_COMMENTS = /^\s*(eslint-|prettier-|@ts-|\/\s*<reference)/;
 
 const cochonnet = {
   rules: {
-    'sans-commentaire': {
+    'no-comments': {
       meta: {
         type: 'problem',
         messages: {
-          interdit:
-            'Pas de commentaire : le code doit se décrire lui-même. Extrais une fonction ou une constante bien nommée. Voir CLAUDE.md, Conventions.',
+          forbidden:
+            'No comments: the code must describe itself. Extract a well-named function or constant instead. See CLAUDE.md, Conventions.',
         },
         schema: [],
       },
       create(context) {
         return {
           Program() {
-            for (const commentaire of context.sourceCode.getAllComments()) {
-              if (COMMENTAIRES_TOLERES.test(commentaire.value)) {
+            for (const comment of context.sourceCode.getAllComments()) {
+              if (TOLERATED_COMMENTS.test(comment.value)) {
                 continue;
               }
-              context.report({ loc: commentaire.loc, messageId: 'interdit' });
+              context.report({ loc: comment.loc, messageId: 'forbidden' });
             }
           },
         };
@@ -34,7 +34,7 @@ const cochonnet = {
   },
 };
 
-const INTERDIT_DANS_LE_DOMAINE = [
+const FORBIDDEN_IN_DOMAIN = [
   'react',
   'react/*',
   'react-dom',
@@ -63,7 +63,7 @@ export default tseslint.config([
     plugins: { cochonnet },
     extends: [js.configs.recommended],
     rules: {
-      'cochonnet/sans-commentaire': 'error',
+      'cochonnet/no-comments': 'error',
       eqeqeq: ['error', 'always'],
       'no-console': ['error', { allow: ['error', 'warn'] }],
       'no-param-reassign': 'error',
@@ -117,9 +117,9 @@ export default tseslint.config([
         {
           patterns: [
             {
-              group: INTERDIT_DANS_LE_DOMAINE,
+              group: FORBIDDEN_IN_DOMAIN,
               message:
-                "src/domain est pur : ni framework, ni Electron, ni module Node. Voir CLAUDE.md, règle d'or.",
+                'src/domain is pure: no framework, no Electron, no Node module. See CLAUDE.md, golden rule.',
             },
           ],
         },
@@ -139,12 +139,12 @@ export default tseslint.config([
         {
           object: 'Math',
           property: 'random',
-          message: 'Le hasard entre par une graine passée en argument (R4.7).',
+          message: 'Randomness enters through a seed passed as an argument (R4.7).',
         },
         {
           object: 'Date',
           property: 'now',
-          message: 'Le temps entre par un argument, jamais par une lecture directe.',
+          message: 'Time enters through an argument, never through a direct read.',
         },
       ],
     },

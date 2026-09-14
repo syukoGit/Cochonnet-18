@@ -10,7 +10,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'lcov'],
-      include: ['src/domain/**/*.ts', 'src/shared/**/*.ts', 'electron/main/depot.ts'],
+      include: ['src/domain/**/*.ts', 'src/shared/**/*.ts', 'electron/main/repository.ts'],
       thresholds: {
         statements: 85,
         branches: 85,

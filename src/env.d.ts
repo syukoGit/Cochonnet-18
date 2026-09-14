@@ -1,27 +1,27 @@
 /// <reference types="vite/client" />
 
-import type { Evenement } from './domain/event/types';
+import type { Tournament, TournamentId } from './domain/tournament/types';
 
-export interface EvenementIllisible {
-  fichier: string;
-  motif: string;
+export interface UnreadableTournament {
+  file: string;
+  reason: string;
   detail: string;
 }
 
-export interface Inventaire {
-  evenements: Evenement[];
-  illisibles: EvenementIllisible[];
+export interface Inventory {
+  tournaments: Tournament[];
+  unreadable: UnreadableTournament[];
 }
 
-export interface PontEvenements {
-  lister: () => Promise<Inventaire>;
-  lire: (id: string) => Promise<Evenement | null>;
-  ecrire: (evenement: Evenement) => Promise<void>;
-  supprimer: (id: string) => Promise<void>;
+export interface TournamentBridge {
+  list: () => Promise<Inventory>;
+  read: (id: TournamentId) => Promise<Tournament | null>;
+  write: (tournament: Tournament) => Promise<void>;
+  remove: (id: TournamentId) => Promise<void>;
 }
 
 declare global {
   interface Window {
-    cochonnet: { evenements: PontEvenements };
+    cochonnet: { tournaments: TournamentBridge };
   }
 }
