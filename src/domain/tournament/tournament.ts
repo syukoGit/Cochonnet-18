@@ -15,6 +15,8 @@ export function createTournament(id: TournamentId, name: string, now: Timestamp)
     id,
     name: normaliseName(name),
     phase: 'configuration',
+    teams: [],
+    nextTeamId: 1,
     created: now,
     modified: now,
     opened: now,

@@ -3,10 +3,17 @@ import { PHASES } from '@/domain/tournament/types';
 
 export const SAVE_VERSION = 1;
 
+export const teamSchema = z.object({
+  id: z.number().int().min(1),
+  name: z.string().min(1),
+});
+
 export const tournamentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   phase: z.enum(PHASES),
+  teams: z.array(teamSchema),
+  nextTeamId: z.number().int().min(1),
   created: z.string().min(1),
   modified: z.string().min(1),
   opened: z.string().min(1),

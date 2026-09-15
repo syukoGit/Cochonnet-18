@@ -1,11 +1,14 @@
 # Règles de Cochonnet-18
 
-**Version 1.2** — validée le 13 septembre 2026.
+**Version 1.3** — validée le 14 septembre 2026.
 
 Ce document est la spécification de référence du logiciel. Chaque règle numérotée
 correspond à un test du domaine (`src/domain/`). Toute modification d'une règle
 implique une modification du test correspondant, et inversement.
 
+> **Changements depuis 1.2** — la comparaison des noms d'équipe est normalisée et
+> insensible à la casse (R1.3).
+>
 > **Changements depuis 1.1** — un événement par fichier et accueil en liste
 > d'événements (R6.1, R6.6, R7.1) ; les verrous sont une propriété de l'état mais
 > l'annulation est bornée (R6.8) ; pas de plafond au nombre d'équipes, avec
@@ -30,7 +33,10 @@ joueurs nommés. Elle possède un identifiant stable (`TeamId`) attribué à la
 création et jamais réutilisé ; le nom est un simple libellé, modifiable à tout
 moment sans conséquence sur les matchs déjà joués.
 
-**R1.3** — Deux équipes ne peuvent pas porter le même nom.
+**R1.3** — Deux équipes ne peuvent pas porter le même nom. La comparaison se fait
+sur le nom **normalisé** — espaces de bord retirés, espaces internes réduits à un
+seul — et **sans distinction de casse** : « Les Boulistes » et « les boulistes »
+sont le même nom et le second est refusé.
 
 **R1.4** — Le nombre de matchs *M* doit vérifier `1 ≤ M ≤ N - 1`, où *N* est le
 nombre d'équipes. Le minimum d'équipes est 2.
