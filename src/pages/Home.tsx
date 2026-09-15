@@ -3,17 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
 import Shell from '@/components/Shell';
+import { STEP_LABELS } from '@/components/labels';
+import { furthestStep } from '@/domain/navigation';
 import { isValidTournamentName } from '@/domain/tournament/tournament';
-import type { Phase, Tournament, TournamentId } from '@/domain/tournament/types';
+import type { Tournament, TournamentId } from '@/domain/tournament/types';
 import { useTournaments } from '@/store/useTournaments';
-
-const PHASE_LABELS: Record<Phase, string> = {
-  configuration: 'Configuration',
-  phase1: 'Phase 1',
-  closing: 'Clôture',
-  phase2: 'Phase 2',
-  results: 'Terminé',
-};
 
 const longDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
 
@@ -113,7 +107,8 @@ export default function Home() {
                 >
                   <span className="block truncate font-medium">{tournament.name}</span>
                   <span className="block truncate text-sm text-ink-soft">
-                    {PHASE_LABELS[tournament.phase]} · modifié le {formatDate(tournament.modified)}
+                    {STEP_LABELS[furthestStep(tournament)]} · modifié le{' '}
+                    {formatDate(tournament.modified)}
                   </span>
                 </button>
                 <Button

@@ -3,12 +3,13 @@ import type { ReactNode } from 'react';
 interface ShellProps {
   title: string;
   subtitle?: string;
+  nav?: ReactNode;
   actions?: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
 }
 
-export default function Shell({ title, subtitle, actions, footer, children }: ShellProps) {
+export default function Shell({ title, subtitle, nav, actions, footer, children }: ShellProps) {
   return (
     <div className="flex h-full flex-col bg-ground text-ink">
       <header className="flex shrink-0 items-center gap-4 border-b border-line bg-surface px-6 py-3">
@@ -16,6 +17,7 @@ export default function Shell({ title, subtitle, actions, footer, children }: Sh
           <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
           {subtitle && <p className="truncate text-sm text-ink-soft">{subtitle}</p>}
         </div>
+        {nav && <div className="shrink-0">{nav}</div>}
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
 

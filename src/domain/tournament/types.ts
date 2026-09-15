@@ -5,7 +5,7 @@ import type { Settings } from './settings';
 
 export type { TeamId, Timestamp, TournamentId };
 
-export const PHASES = ['configuration', 'phase1', 'closing', 'phase2', 'results'] as const;
+export const PHASES = ['configuration', 'phase1', 'closing', 'phase2'] as const;
 
 export type Phase = (typeof PHASES)[number];
 

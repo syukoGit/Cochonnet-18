@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { addTeam } from '@/domain/tournament/teams';
 import { createTournament } from '@/domain/tournament/tournament';
 import type { Tournament } from '@/domain/tournament/types';
+import { clearEntry, enterForfeit, enterScore } from '@/domain/match/entry';
 import { drawPhase1 } from './draw';
-import { clearEntry, enterForfeit, enterScore, phase1SettingsLocked } from './entry';
+import { phase1SettingsLocked } from './entry';
 
 const t0 = '2026-09-15T09:00:00.000Z';
 const t1 = '2026-09-15T10:00:00.000Z';

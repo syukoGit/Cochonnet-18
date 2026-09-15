@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { clearEntry, enterForfeit, enterScore } from '@/domain/phase1/entry';
+import { clearEntry, enterForfeit, enterScore } from '@/domain/match/entry';
 import { startPhase1 } from '@/domain/phase1/start';
 import { recordDecision } from '@/domain/phase1/tiebreak';
 import { closePhase1, reinstate, reopenPhase1, withdraw } from '@/domain/phase2/split';

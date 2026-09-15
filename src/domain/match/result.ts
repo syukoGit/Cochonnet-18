@@ -1,11 +1,15 @@
 import type { TeamId } from '@/domain/ids';
 import type { Score } from '@/domain/score/validity';
 import { isValidScore, winnerIndex } from '@/domain/score/validity';
-import { isBye, opponents } from './types';
+import { opponents } from './types';
 import type { Match } from './types';
 
+function sameScore(match: Match, score: Score): boolean {
+  return match.status === 'played' && match.score?.[0] === score[0] && match.score[1] === score[1];
+}
+
 export function recordScore(match: Match, score: Score, minimumGap: number): Match {
-  if (isBye(match) || !isValidScore(score[0], score[1], minimumGap)) {
+  if (!isValidScore(score[0], score[1], minimumGap) || sameScore(match, score)) {
     return match;
   }
 
@@ -13,7 +17,7 @@ export function recordScore(match: Match, score: Score, minimumGap: number): Mat
 }
 
 export function recordForfeit(match: Match, absent: TeamId): Match {
-  if (isBye(match) || !opponents(match).includes(absent)) {
+  if (match.status === 'forfeit' && match.forfeitBy === absent) {
     return match;
   }
 

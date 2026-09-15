@@ -5,17 +5,23 @@ interface RankingPanelProps {
   ranking: RankingEntry[];
   nameOf: (team: TeamId) => string;
   provisional: boolean;
+  title?: string;
 }
 
 function signed(value: number): string {
   return value > 0 ? `+${value}` : String(value);
 }
 
-export default function RankingPanel({ ranking, nameOf, provisional }: RankingPanelProps) {
+export default function RankingPanel({
+  ranking,
+  nameOf,
+  provisional,
+  title = 'Classement',
+}: RankingPanelProps) {
   return (
     <section className="overflow-hidden rounded-panel border border-line bg-surface">
       <header className="flex items-baseline justify-between gap-3 border-b border-line px-4 py-3">
-        <h2 className="font-semibold">Classement</h2>
+        <h2 className="font-semibold">{title}</h2>
         {provisional && (
           <span className="rounded-panel bg-warning-ground px-2 py-0.5 text-xs font-medium text-warning">
             provisoire

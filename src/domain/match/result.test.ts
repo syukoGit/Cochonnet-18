@@ -37,8 +37,11 @@ describe('recording a match result', () => {
     expect(loserOf(played)).toBe(7);
   });
 
-  it('refuses a score on a bye', () => {
-    expect(recordScore(bye, [13, 8], 0)).toBe(bye);
+  it('leaves the match untouched when the same score is entered twice', () => {
+    const played = recordScore(playable, [13, 8], 0);
+
+    expect(recordScore(played, [13, 8], 0)).toBe(played);
+    expect(recordScore(played, [13, 9], 0)).not.toBe(played);
   });
 
   it('refuses an unreachable score', () => {
@@ -58,9 +61,11 @@ describe('recording a match result', () => {
     expect(loserOf(forfeited)).toBe(9);
   });
 
-  it('refuses a forfeit on a bye or from an outside team', () => {
-    expect(recordForfeit(bye, 7)).toBe(bye);
-    expect(recordForfeit(playable, 42)).toBe(playable);
+  it('leaves the match untouched when the same forfeit is entered twice', () => {
+    const forfeited = recordForfeit(playable, 9);
+
+    expect(recordForfeit(forfeited, 9)).toBe(forfeited);
+    expect(recordForfeit(forfeited, 7)).not.toBe(forfeited);
   });
 
   it('a forfeit clears any score already recorded', () => {

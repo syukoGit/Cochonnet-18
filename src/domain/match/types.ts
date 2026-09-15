@@ -7,6 +7,10 @@ export const MATCH_PHASES = ['phase1', 'main', 'consolation'] as const;
 
 export type MatchPhase = (typeof MATCH_PHASES)[number];
 
+export const BRACKET_PHASES = ['main', 'consolation'] as const;
+
+export type BracketPhase = (typeof BRACKET_PHASES)[number];
+
 export type MatchStatus = 'waiting' | 'played' | 'forfeit';
 
 export type Slot =

@@ -1,22 +1,44 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@/components/Button';
 import Shell from '@/components/Shell';
-import type { Phase } from '@/domain/tournament/types';
+import StepNav from '@/components/StepNav';
+import { stepShown } from '@/domain/navigation';
+import type { Step } from '@/domain/navigation';
+import type { Tournament } from '@/domain/tournament/types';
 import Closing from '@/pages/Closing';
 import Configuration from '@/pages/Configuration';
 import Phase1 from '@/pages/Phase1';
 import Phase2 from '@/pages/Phase2';
+import Results from '@/pages/Results';
 import { useTournaments } from '@/store/useTournaments';
 
-const NOT_YET_BUILT: Partial<Record<Phase, string>> = {
-  results: 'Les résultats arrivent à la tranche V7.',
-};
+function screenOf(tournament: Tournament, step: Step, nav: ReactNode) {
+  if (step === 'configuration') {
+    return <Configuration tournament={tournament} nav={nav} />;
+  }
+
+  if (step === 'phase1') {
+    return <Phase1 tournament={tournament} nav={nav} />;
+  }
+
+  if (step === 'closing') {
+    return <Closing tournament={tournament} nav={nav} />;
+  }
+
+  if (step === 'phase2') {
+    return <Phase2 tournament={tournament} nav={nav} />;
+  }
+
+  return <Results tournament={tournament} nav={nav} />;
+}
 
 export default function TournamentRoute() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { list, loading, load, current, open } = useTournaments();
+  const [wanted, setWanted] = useState<Step | null>(null);
 
   useEffect(() => {
     if (loading && list.length === 0) {
@@ -58,27 +80,7 @@ export default function TournamentRoute() {
     );
   }
 
-  if (current.phase === 'configuration') {
-    return <Configuration tournament={current} />;
-  }
+  const step = stepShown(current, wanted);
 
-  if (current.phase === 'phase1') {
-    return <Phase1 tournament={current} />;
-  }
-
-  if (current.phase === 'closing') {
-    return <Closing tournament={current} />;
-  }
-
-  if (current.phase === 'phase2') {
-    return <Phase2 tournament={current} />;
-  }
-
-  return (
-    <Shell title={current.name} subtitle="À venir">
-      <div className="mx-auto w-full max-w-3xl">
-        <p className="text-ink-soft">{NOT_YET_BUILT[current.phase]}</p>
-      </div>
-    </Shell>
-  );
+  return screenOf(current, step, <StepNav tournament={current} shown={step} onOpen={setWanted} />);
 }

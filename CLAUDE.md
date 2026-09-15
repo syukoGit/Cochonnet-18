@@ -118,6 +118,11 @@ passed while the editor reported nonsense on three unrelated lines. Shared ident
 [`src/domain/ids.ts`](src/domain/ids.ts), which imports nothing — put a new `…Id` there rather than in the module
 that happens to own the concept.
 
+Which screen the organiser may open is itself derived, in [`src/domain/navigation.ts`](src/domain/navigation.ts):
+`stepsOf` marks each step done, open or locked from the tournament alone (R7.2). The stored `phase` stops at
+`phase2` — `results` is a step, not a state — and the application never changes screen on its own: finishing the last
+final opens the results step and leaves you where you are, because there may still be a play-off to enter.
+
 The fourteen invariants are not all in place yet. Until one lands, the rule it pins down is verified by nothing, and
 a change checked only by running the application should be reported as exactly that.
 
@@ -170,13 +175,24 @@ the team rests, and the match has no winner. In a bracket a bye means the team s
 match at all, the team is seated directly in round 2. Encoding it that way keeps the engine free of any branch on
 the phase.
 
-Entering a result is a pure function `applyResult(tournament, matchId, score) → tournament`. Because the outgoing links
-are explicit, it walks downstream and **clears every dependent match before injecting the new qualifier** (R4.11). A
-tree mutated in place cannot do that: it propagates a winner upward and leaves stale results behind, which crowns a
-team that played no further match. The flat shape makes that class of bug unwritable.
+Entering a result goes through [`src/domain/match/entry.ts`](src/domain/match/entry.ts) — `enterScore`,
+`enterForfeit` and `clearEntry`, each a pure `Tournament → Tournament`. **One module serves both phases**: a phase 1
+match simply has no outgoing link, so the cascade costs nothing there and no caller has to know which phase it is in.
+Each of them refuses a match whose occupants are not both known, which is `I9` enforced at the only door that writes.
 
-A stored result is **locked** (R4.12). Unlocking is an explicit action that names, before confirming, every match it
-will erase.
+Because the outgoing links are explicit, a write **clears every dependent match before injecting the new qualifier**
+(R4.11) — `downstreamOf` in [`cascade.ts`](src/domain/match/cascade.ts) walks `feeds` and `feedsConsolation`, so
+correcting a semi final empties the final and the play-off alike. A tree mutated in place cannot do that: it
+propagates a winner upward and leaves stale results behind, which crowns a team that played no further match. The flat
+shape makes that class of bug unwritable.
+
+A stored result is **locked** (R4.12), and unlocking it *is* clearing it — there is no separate unlocked state to get
+out of step with the data. `invalidatedBy` gives the interface the matches that will lose their result, which it names
+before asking for confirmation.
+
+The podium is read off the same graph rather than stored: `podiumOf` takes the winner and loser of the final, and the
+third place from the play-off when there is one or from the lone semi final when there is not (R4.13 – R4.15).
+`resultsReady` is what opens the results step, and it is a question about the state, never a flag someone sets.
 
 Fields land in the slice that first reads them, so at any point the `Match` on disk may carry fewer of them than this
 block shows — check `src/domain/match/types.ts` rather than assuming.

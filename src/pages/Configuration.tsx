@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
@@ -25,9 +26,10 @@ const BLOCKER_MESSAGES: Record<StartBlocker, string> = {
 
 interface ConfigurationProps {
   tournament: Tournament;
+  nav: ReactNode;
 }
 
-export default function Configuration({ tournament }: ConfigurationProps) {
+export default function Configuration({ tournament, nav }: ConfigurationProps) {
   const navigate = useNavigate();
   const { addTeam, renameTeam, removeTeam, setMatchCount, setSetting, startPhase1 } =
     useTournaments();
@@ -54,6 +56,7 @@ export default function Configuration({ tournament }: ConfigurationProps) {
   return (
     <Shell
       title={tournament.name}
+      nav={nav}
       subtitle={`Configuration · ${teamCount} ${teamCount > 1 ? 'équipes' : 'équipe'}`}
       actions={
         <Button

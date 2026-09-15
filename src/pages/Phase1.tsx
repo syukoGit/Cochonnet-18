@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
@@ -17,13 +18,14 @@ import { useTournaments } from '@/store/useTournaments';
 
 interface Phase1Props {
   tournament: Tournament;
+  nav: ReactNode;
 }
 
 function roundsOf(matches: Match[]): number[] {
   return [...new Set(matches.map((match) => match.round))].sort((a, b) => a - b);
 }
 
-export default function Phase1({ tournament }: Phase1Props) {
+export default function Phase1({ tournament, nav }: Phase1Props) {
   const navigate = useNavigate();
   const { enterScore, enterForfeit, clearEntry, setSetting, closePhase1 } = useTournaments();
 
@@ -54,6 +56,7 @@ export default function Phase1({ tournament }: Phase1Props) {
   return (
     <Shell
       title={tournament.name}
+      nav={nav}
       subtitle={`Phase 1 · ${entered} / ${total} matchs saisis`}
       footer={
         <>

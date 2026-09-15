@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
@@ -11,13 +12,14 @@ import { useTournaments } from '@/store/useTournaments';
 
 interface ClosingProps {
   tournament: Tournament;
+  nav: ReactNode;
 }
 
 function signed(value: number): string {
   return value > 0 ? `+${value}` : String(value);
 }
 
-export default function Closing({ tournament }: ClosingProps) {
+export default function Closing({ tournament, nav }: ClosingProps) {
   const navigate = useNavigate();
   const { reopenPhase1, withdraw, reinstate, settleTie, drawBrackets } = useTournaments();
   const [tieToSettle, setTieToSettle] = useState<TeamId[] | null>(null);
@@ -37,6 +39,7 @@ export default function Closing({ tournament }: ClosingProps) {
   return (
     <Shell
       title={tournament.name}
+      nav={nav}
       subtitle={`Clôture · ${split.main.length} au principal, ${split.consolation.length} en consolante`}
       actions={
         <Button
