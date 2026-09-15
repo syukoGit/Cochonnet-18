@@ -45,5 +45,7 @@ export function clearEntry(tournament: Tournament, matchId: MatchId, now: Timest
 }
 
 export function phase1SettingsLocked(tournament: Tournament): boolean {
-  return tournament.matches.some((match) => !isBye(match) && match.status !== 'waiting');
+  return tournament.matches.some(
+    (match) => match.phase === 'phase1' && !isBye(match) && match.status !== 'waiting'
+  );
 }

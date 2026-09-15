@@ -19,7 +19,7 @@ function signed(value: number): string {
 
 export default function Closing({ tournament }: ClosingProps) {
   const navigate = useNavigate();
-  const { reopenPhase1, withdraw, reinstate, settleTie } = useTournaments();
+  const { reopenPhase1, withdraw, reinstate, settleTie, drawBrackets } = useTournaments();
   const [tieToSettle, setTieToSettle] = useState<TeamId[] | null>(null);
 
   const { entries } = rankTeams(tournament);
@@ -55,7 +55,7 @@ export default function Closing({ tournament }: ClosingProps) {
               : 'Répartition prête.'}
           </span>
           <Button onClick={reopenPhase1}>Revenir à la phase 1</Button>
-          <Button tone="primary" disabled={ties.length > 0}>
+          <Button tone="primary" disabled={ties.length > 0} onClick={drawBrackets}>
             Tirer les tableaux
           </Button>
         </>

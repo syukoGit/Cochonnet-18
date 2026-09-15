@@ -6,10 +6,10 @@ import type { Phase } from '@/domain/tournament/types';
 import Closing from '@/pages/Closing';
 import Configuration from '@/pages/Configuration';
 import Phase1 from '@/pages/Phase1';
+import Phase2 from '@/pages/Phase2';
 import { useTournaments } from '@/store/useTournaments';
 
 const NOT_YET_BUILT: Partial<Record<Phase, string>> = {
-  phase2: 'Le tableau arrive à la tranche V6.',
   results: 'Les résultats arrivent à la tranche V7.',
 };
 
@@ -68,6 +68,10 @@ export default function TournamentRoute() {
 
   if (current.phase === 'closing') {
     return <Closing tournament={current} />;
+  }
+
+  if (current.phase === 'phase2') {
+    return <Phase2 tournament={current} />;
   }
 
   return (

@@ -4,6 +4,7 @@ import { clearEntry, enterForfeit, enterScore } from '@/domain/phase1/entry';
 import { startPhase1 } from '@/domain/phase1/start';
 import { recordDecision } from '@/domain/phase1/tiebreak';
 import { closePhase1, reinstate, reopenPhase1, withdraw } from '@/domain/phase2/split';
+import { drawBrackets } from '@/domain/phase2/start';
 import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
 import type { Settings } from '@/domain/tournament/settings';
 import {
@@ -57,6 +58,7 @@ interface TournamentsState {
   withdraw: (team: TeamId) => void;
   reinstate: (team: TeamId) => void;
   settleTie: (teams: TeamId[], order: TeamId[]) => void;
+  drawBrackets: () => void;
 }
 
 function now(): string {
@@ -246,6 +248,10 @@ export const useTournaments = create<TournamentsState>()(
         tieBreaks: recordDecision(tournament.tieBreaks, { teams, order }),
         modified: now(),
       }));
+    },
+
+    drawBrackets: () => {
+      applyToCurrent(set, get, (tournament) => drawBrackets(tournament, drawSeed(), now()));
     },
 
     remove: async (id) => {

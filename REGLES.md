@@ -9,7 +9,8 @@ implique une modification du test correspondant, et inversement.
 > **Changements depuis 1.3** — la confrontation directe ordonne sur le différentiel
 > des seuls matchs entre les équipes à égalité (R2.12) ; l'arrondi du crédit
 > d'exemption s'éloigne de zéro, pour ne pas avantager les différentiels négatifs
-> (R2.8) ; une égalité ne s'arbitre que si deux de ses équipes restent en lice (R3.5).
+> (R2.8) ; une égalité ne s'arbitre que si deux de ses équipes restent en lice (R3.5) ;
+> à trois équipes, le troisième sort de l'unique demi-finale sans match (R4.14, R4.15).
 >
 > **Changements depuis 1.2** — la comparaison des noms d'équipe est normalisée et
 > insensible à la casse (R1.3).
@@ -281,8 +282,12 @@ est une action explicite, soumise à R4.11.
 
 **R4.13** — Le vainqueur de la finale est premier, son adversaire deuxième.
 
-**R4.14** — Une petite finale est **systématiquement** créée, alimentée par les
-perdants des deux demi-finales. Son vainqueur est troisième.
+**R4.14** — Une petite finale est créée **dès que le tableau comporte deux
+demi-finales**, alimentée par leurs perdants. Son vainqueur est troisième.
+
+Un tableau de trois équipes n'en comporte qu'une : la troisième place revient alors
+directement au perdant de cette unique demi-finale, sans match supplémentaire. Le
+podium est complet, mais il n'y a rien à jouer pour la troisième place.
 
 **R4.15** — Les groupes de petite taille sont traités explicitement :
 
@@ -291,7 +296,8 @@ perdants des deux demi-finales. Son vainqueur est troisième.
 | 0 | Aucun tableau, aucun podium |
 | 1 | L'équipe est première d'office. Pas de deuxième ni de troisième |
 | 2 | Une finale. Pas de petite finale, donc pas de troisième |
-| ≥ 3 | Tableau complet, podium complet |
+| 3 | Une demi-finale et une finale. Le troisième est le perdant de la demi-finale, sans match de classement (R4.14) |
+| ≥ 4 | Tableau complet, petite finale comprise |
 
 **R4.16** — Les résultats s'affichent dès que **chaque tableau existant** a désigné
 son vainqueur. Un groupe vide ne bloque pas l'affichage.

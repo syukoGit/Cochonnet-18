@@ -1,6 +1,6 @@
 import type { TeamId } from '@/domain/ids';
 import { loserOf, winnerOf } from '@/domain/match/result';
-import { isBye, opponents } from '@/domain/match/types';
+import { isBye, opponents, phaseMatches } from '@/domain/match/types';
 import type { Match } from '@/domain/match/types';
 import { differential } from '@/domain/score/validity';
 import type { Tournament } from '@/domain/tournament/types';
@@ -80,12 +80,18 @@ function applyMatch(entries: Map<TeamId, RankingEntry>, match: Match, forfeitVal
   }
 }
 
+export function qualificationMatches(matches: readonly Match[]): Match[] {
+  return phaseMatches(matches, 'phase1');
+}
+
 export function playableCount(matches: readonly Match[]): number {
-  return matches.filter((match) => !isBye(match)).length;
+  return qualificationMatches(matches).filter((match) => !isBye(match)).length;
 }
 
 export function enteredCount(matches: readonly Match[]): number {
-  return matches.filter((match) => !isBye(match) && match.status !== 'waiting').length;
+  return qualificationMatches(matches).filter(
+    (match) => !isBye(match) && match.status !== 'waiting'
+  ).length;
 }
 
 export function phase1Complete(tournament: Tournament): boolean {
@@ -97,7 +103,7 @@ export function phase1Complete(tournament: Tournament): boolean {
 export function rankTeams(tournament: Tournament): Ranking {
   const entries = new Map(tournament.teams.map((team) => [team.id, emptyEntry(team.id)]));
 
-  for (const match of tournament.matches) {
+  for (const match of qualificationMatches(tournament.matches)) {
     applyMatch(entries, match, tournament.settings.forfeitDifferential);
   }
 
@@ -132,7 +138,7 @@ export function rankTeams(tournament: Tournament): Ranking {
 
     for (const block of separate(
       contenders,
-      tournament.matches,
+      qualificationMatches(tournament.matches),
       tournament.settings.forfeitDifferential
     )) {
       const teams = block.map((contender) => contender.team);

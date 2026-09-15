@@ -32,6 +32,8 @@ export function clampForfeitDifferential(value: number): number {
 
 const GAP_BY_PHASE: Record<MatchPhase, keyof Settings> = {
   phase1: 'minimumGapPhase1',
+  main: 'minimumGapPhase2',
+  consolation: 'minimumGapPhase2',
 };
 
 export function minimumGapFor(settings: Settings, phase: MatchPhase): number {

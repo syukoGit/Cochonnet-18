@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MATCH_PHASES } from '@/domain/match/types';
 import { BYE_POINTS_MODES } from '@/domain/tournament/settings';
 import { PHASES } from '@/domain/tournament/types';
 
@@ -12,16 +13,25 @@ export const teamSchema = z.object({
 export const slotSchema = z.union([
   z.object({ kind: z.literal('team'), team: z.number().int().min(1) }),
   z.object({ kind: z.literal('bye') }),
+  z.object({ kind: z.literal('winner'), from: z.number().int().min(1) }),
+  z.object({ kind: z.literal('loser'), from: z.number().int().min(1) }),
 ]);
+
+export const feedSchema = z.object({
+  match: z.number().int().min(1),
+  slot: z.union([z.literal(0), z.literal(1)]),
+});
 
 export const matchSchema = z.object({
   id: z.number().int().min(1),
-  phase: z.literal('phase1'),
+  phase: z.enum(MATCH_PHASES),
   round: z.number().int().min(1),
   slots: z.tuple([slotSchema, slotSchema]),
   status: z.enum(['waiting', 'played', 'forfeit']),
   score: z.tuple([z.number().int().min(0), z.number().int().min(0)]).optional(),
   forfeitBy: z.number().int().min(1).optional(),
+  feeds: feedSchema.optional(),
+  feedsConsolation: feedSchema.optional(),
 });
 
 export const settingsSchema = z.object({
@@ -45,6 +55,7 @@ export const tournamentSchema = z.object({
   matchCount: z.number().int().min(1),
   settings: settingsSchema,
   matches: z.array(matchSchema),
+  phase2Seed: z.number().int().min(0),
   tieBreaks: z.array(tieBreakSchema),
   withdrawn: z.array(z.number().int().min(1)),
   created: z.string().min(1),

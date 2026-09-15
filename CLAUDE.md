@@ -151,14 +151,24 @@ A knockout bracket is **not a tree**. It is a flat list of matches joined by exp
 
 ```
 Match = {
-  id, phase, round
-  slots: [Slot, Slot]        team, bye, or "winner of M12"
+  id, phase, round             phase1 | main | consolation
+  slots: [Slot, Slot]          team | bye | winner of M12 | loser of M12
   score?: [number, number]
-  status: waiting | in_progress | played | forfeit
+  status: waiting | played | forfeit
   feeds?: { match, slot }
   feedsConsolation?: { match, slot }
 }
 ```
+
+**A slot names its source; the occupant is derived, never written in.** `occupantsIn(matches, match)` resolves
+`winner of M12` by recursion, so a team can only appear where it actually earned its place — that is `I9` made
+structural rather than checked. Clearing a result empties everything downstream on its own; cascade invalidation
+(R4.11) therefore only has to erase downstream *scores*, never repair the graph.
+
+**A bye means two different things in the two phases, so it is two different shapes.** In phase 1 a bye slot means
+the team rests, and the match has no winner. In a bracket a bye means the team skips round 1 entirely — there is no
+match at all, the team is seated directly in round 2. Encoding it that way keeps the engine free of any branch on
+the phase.
 
 Entering a result is a pure function `applyResult(tournament, matchId, score) → tournament`. Because the outgoing links
 are explicit, it walks downstream and **clears every dependent match before injecting the new qualifier** (R4.11). A
@@ -168,8 +178,8 @@ team that played no further match. The flat shape makes that class of bug unwrit
 A stored result is **locked** (R4.12). Unlocking is an explicit action that names, before confirming, every match it
 will erase.
 
-That shape is the **target**. Fields land in the slice that first reads them, so at any point the `Match` on disk may
-carry fewer of them than this block shows — check `src/domain/match/types.ts` rather than assuming.
+Fields land in the slice that first reads them, so at any point the `Match` on disk may carry fewer of them than this
+block shows — check `src/domain/match/types.ts` rather than assuming.
 
 ### The two algorithms
 

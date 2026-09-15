@@ -23,6 +23,7 @@ export interface Tournament {
   matchCount: number;
   settings: Settings;
   matches: Match[];
+  phase2Seed: number;
   tieBreaks: TieBreak[];
   withdrawn: TeamId[];
   created: Timestamp;

@@ -52,6 +52,12 @@ describe('closing and splitting', () => {
     expect(reopenPhase1(closed, t1).phase).toBe('phase1');
   });
 
+  it('reopening only applies to a closed phase', () => {
+    const complete = tournamentOf(4, [match(1, 1, 2, [13, 5]), match(2, 3, 4, [13, 9])]);
+
+    expect(reopenPhase1(complete, t1)).toBe(complete);
+  });
+
   it('cuts in half and gives the extra team to the main bracket', () => {
     const odd = tournamentOf(5, [match(1, 1, 2, [13, 5]), match(2, 3, 4, [13, 9])]);
     const split = splitOf(odd);

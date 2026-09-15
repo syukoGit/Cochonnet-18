@@ -21,6 +21,7 @@ export function createTournament(id: TournamentId, name: string, now: Timestamp)
     matchCount: 3,
     settings: DEFAULT_SETTINGS,
     matches: [],
+    phase2Seed: 0,
     tieBreaks: [],
     withdrawn: [],
     created: now,

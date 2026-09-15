@@ -3,11 +3,22 @@ import type { Score } from '@/domain/score/validity';
 
 export type { MatchId };
 
-export type MatchPhase = 'phase1';
+export const MATCH_PHASES = ['phase1', 'main', 'consolation'] as const;
+
+export type MatchPhase = (typeof MATCH_PHASES)[number];
 
 export type MatchStatus = 'waiting' | 'played' | 'forfeit';
 
-export type Slot = { kind: 'team'; team: TeamId } | { kind: 'bye' };
+export type Slot =
+  | { kind: 'team'; team: TeamId }
+  | { kind: 'bye' }
+  | { kind: 'winner'; from: MatchId }
+  | { kind: 'loser'; from: MatchId };
+
+export interface Feed {
+  match: MatchId;
+  slot: 0 | 1;
+}
 
 export interface Match {
   id: MatchId;
@@ -17,6 +28,8 @@ export interface Match {
   status: MatchStatus;
   score?: Score;
   forfeitBy?: TeamId;
+  feeds?: Feed;
+  feedsConsolation?: Feed;
 }
 
 export function isBye(match: Match): boolean {
@@ -27,10 +40,14 @@ export function opponents(match: Match): TeamId[] {
   return match.slots.flatMap((slot) => (slot.kind === 'team' ? [slot.team] : []));
 }
 
-export function isPlayable(match: Match): boolean {
-  return !isBye(match);
-}
-
 export function hasResult(match: Match): boolean {
   return match.status !== 'waiting';
+}
+
+export function phaseMatches(matches: readonly Match[], phase: MatchPhase): Match[] {
+  return matches.filter((match) => match.phase === phase);
+}
+
+export function bracketMatches(matches: readonly Match[]): Match[] {
+  return matches.filter((match) => match.phase !== 'phase1');
 }
