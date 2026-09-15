@@ -19,7 +19,9 @@ export const matchSchema = z.object({
   phase: z.literal('phase1'),
   round: z.number().int().min(1),
   slots: z.tuple([slotSchema, slotSchema]),
-  status: z.enum(['waiting', 'played']),
+  status: z.enum(['waiting', 'played', 'forfeit']),
+  score: z.tuple([z.number().int().min(0), z.number().int().min(0)]).optional(),
+  forfeitBy: z.number().int().min(1).optional(),
 });
 
 export const settingsSchema = z.object({
