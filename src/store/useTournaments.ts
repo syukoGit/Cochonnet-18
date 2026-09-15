@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { clearEntry, enterForfeit, enterScore } from '@/domain/phase1/entry';
 import { startPhase1 } from '@/domain/phase1/start';
 import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
 import type { Settings } from '@/domain/tournament/settings';
@@ -9,6 +10,8 @@ import {
   markOpened,
   renameTournament,
 } from '@/domain/tournament/tournament';
+import type { MatchId } from '@/domain/ids';
+import type { Score } from '@/domain/score/validity';
 import type { TeamId, Tournament, TournamentId } from '@/domain/tournament/types';
 import type { UnreadableTournament } from '@/env';
 
@@ -44,6 +47,9 @@ interface TournamentsState {
   setMatchCount: (matchCount: number) => void;
   setSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
   startPhase1: () => void;
+  enterScore: (matchId: MatchId, score: Score) => void;
+  enterForfeit: (matchId: MatchId, absent: TeamId) => void;
+  clearEntry: (matchId: MatchId) => void;
 }
 
 function now(): string {
@@ -197,6 +203,18 @@ export const useTournaments = create<TournamentsState>()(
 
     startPhase1: () => {
       applyToCurrent(set, get, (tournament) => startPhase1(tournament, drawSeed(), now()));
+    },
+
+    enterScore: (matchId, score) => {
+      applyToCurrent(set, get, (tournament) => enterScore(tournament, matchId, score, now()));
+    },
+
+    enterForfeit: (matchId, absent) => {
+      applyToCurrent(set, get, (tournament) => enterForfeit(tournament, matchId, absent, now()));
+    },
+
+    clearEntry: (matchId) => {
+      applyToCurrent(set, get, (tournament) => clearEntry(tournament, matchId, now()));
     },
 
     remove: async (id) => {

@@ -11,6 +11,8 @@ const BYE_POINTS_LABELS: Record<ByePointsMode, string> = {
 
 interface SettingsPanelProps {
   tournament: Tournament;
+  disabled?: boolean;
+  includeMatchCount?: boolean;
   onMatchCountChange: (matchCount: number) => void;
   onSettingChange: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
 }
@@ -34,10 +36,12 @@ function Field({
 }
 
 const numberField =
-  'w-24 rounded-panel border border-line bg-ground px-3 py-1.5 text-right tabular-nums focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
+  'w-24 disabled:opacity-50 rounded-panel border border-line bg-ground px-3 py-1.5 text-right tabular-nums focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
 
 export default function SettingsPanel({
   tournament,
+  disabled = false,
+  includeMatchCount = true,
   onMatchCountChange,
   onSettingChange,
 }: SettingsPanelProps) {
@@ -46,25 +50,28 @@ export default function SettingsPanel({
 
   return (
     <div className="divide-y divide-line-soft overflow-hidden rounded-panel border border-line bg-surface">
-      <Field
-        label="Matchs par équipe"
-        hint={
-          limit === 0
-            ? 'Ajoute au moins deux équipes.'
-            : `Entre 1 et ${limit} pour ${tournament.teams.length} équipes.`
-        }
-      >
-        <input
-          type="number"
-          min={1}
-          max={Math.max(limit, 1)}
-          value={tournament.matchCount}
-          onChange={(changeEvent) => {
-            onMatchCountChange(Number(changeEvent.target.value));
-          }}
-          className={outOfRange ? `${numberField} border-warning` : numberField}
-        />
-      </Field>
+      {includeMatchCount && (
+        <Field
+          label="Matchs par équipe"
+          hint={
+            limit === 0
+              ? 'Ajoute au moins deux équipes.'
+              : `Entre 1 et ${limit} pour ${tournament.teams.length} équipes.`
+          }
+        >
+          <input
+            type="number"
+            min={1}
+            max={Math.max(limit, 1)}
+            value={tournament.matchCount}
+            disabled={disabled}
+            onChange={(changeEvent) => {
+              onMatchCountChange(Number(changeEvent.target.value));
+            }}
+            className={outOfRange ? `${numberField} border-warning` : numberField}
+          />
+        </Field>
+      )}
 
       <Field
         label="Écart minimum en phase 1"
@@ -74,6 +81,7 @@ export default function SettingsPanel({
           type="number"
           min={0}
           max={16}
+          disabled={disabled}
           value={tournament.settings.minimumGapPhase1}
           onChange={(changeEvent) => {
             onSettingChange('minimumGapPhase1', Number(changeEvent.target.value));
@@ -87,6 +95,7 @@ export default function SettingsPanel({
           type="number"
           min={0}
           max={16}
+          disabled={disabled}
           value={tournament.settings.minimumGapPhase2}
           onChange={(changeEvent) => {
             onSettingChange('minimumGapPhase2', Number(changeEvent.target.value));
@@ -100,6 +109,7 @@ export default function SettingsPanel({
         hint="Appliqué seulement à la clôture de la phase 1, pour ne pénaliser personne."
       >
         <select
+          disabled={disabled}
           value={tournament.settings.byePoints}
           onChange={(changeEvent) => {
             onSettingChange('byePoints', changeEvent.target.value as ByePointsMode);
@@ -122,6 +132,7 @@ export default function SettingsPanel({
           type="number"
           min={0}
           max={13}
+          disabled={disabled}
           value={tournament.settings.forfeitDifferential}
           onChange={(changeEvent) => {
             onSettingChange('forfeitDifferential', Number(changeEvent.target.value));

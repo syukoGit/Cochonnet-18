@@ -1,3 +1,5 @@
+import type { MatchPhase } from '@/domain/match/types';
+
 export const BYE_POINTS_MODES = ['average', 'zero', 'forfeit13'] as const;
 
 export type ByePointsMode = (typeof BYE_POINTS_MODES)[number];
@@ -26,4 +28,12 @@ export function clampGap(value: number): number {
 
 export function clampForfeitDifferential(value: number): number {
   return Math.min(Math.max(Math.trunc(value), 0), MAX_FORFEIT_DIFFERENTIAL);
+}
+
+const GAP_BY_PHASE: Record<MatchPhase, keyof Settings> = {
+  phase1: 'minimumGapPhase1',
+};
+
+export function minimumGapFor(settings: Settings, phase: MatchPhase): number {
+  return Number(settings[GAP_BY_PHASE[phase]]);
 }
