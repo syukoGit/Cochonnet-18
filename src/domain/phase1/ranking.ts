@@ -4,18 +4,39 @@ import { isBye, opponents } from '@/domain/match/types';
 import type { Match } from '@/domain/match/types';
 import { differential } from '@/domain/score/validity';
 import type { Tournament } from '@/domain/tournament/types';
+import { byeCredit } from './bye';
+import { findDecision, separate } from './tiebreak';
+import type { Contender } from './tiebreak';
 
 export interface RankingEntry {
   team: TeamId;
   differential: number;
+  differentialFromMatches: number;
+  byeCredit: number;
   wins: number;
   pointsScored: number;
   played: number;
   byes: number;
 }
 
+export interface Ranking {
+  entries: RankingEntry[];
+  tieGroups: TeamId[][];
+  unresolvedTies: TeamId[][];
+  complete: boolean;
+}
+
 function emptyEntry(team: TeamId): RankingEntry {
-  return { team, differential: 0, wins: 0, pointsScored: 0, played: 0, byes: 0 };
+  return {
+    team,
+    differential: 0,
+    differentialFromMatches: 0,
+    byeCredit: 0,
+    wins: 0,
+    pointsScored: 0,
+    played: 0,
+    byes: 0,
+  };
 }
 
 function applyMatch(entries: Map<TeamId, RankingEntry>, match: Match, forfeitValue: number): void {
@@ -45,8 +66,8 @@ function applyMatch(entries: Map<TeamId, RankingEntry>, match: Match, forfeitVal
 
   const gained = match.status === 'forfeit' ? forfeitValue : differential(match.score ?? [0, 0]);
 
-  winnerEntry.differential += gained;
-  loserEntry.differential -= gained;
+  winnerEntry.differentialFromMatches += gained;
+  loserEntry.differentialFromMatches -= gained;
   winnerEntry.wins += 1;
   winnerEntry.played += 1;
   loserEntry.played += 1;
@@ -59,20 +80,81 @@ function applyMatch(entries: Map<TeamId, RankingEntry>, match: Match, forfeitVal
   }
 }
 
-export function computeRanking(tournament: Tournament): RankingEntry[] {
+export function playableCount(matches: readonly Match[]): number {
+  return matches.filter((match) => !isBye(match)).length;
+}
+
+export function enteredCount(matches: readonly Match[]): number {
+  return matches.filter((match) => !isBye(match) && match.status !== 'waiting').length;
+}
+
+export function phase1Complete(tournament: Tournament): boolean {
+  const playable = playableCount(tournament.matches);
+
+  return playable > 0 && enteredCount(tournament.matches) === playable;
+}
+
+export function rankTeams(tournament: Tournament): Ranking {
   const entries = new Map(tournament.teams.map((team) => [team.id, emptyEntry(team.id)]));
 
   for (const match of tournament.matches) {
     applyMatch(entries, match, tournament.settings.forfeitDifferential);
   }
 
-  return [...entries.values()].sort((a, b) => b.differential - a.differential || a.team - b.team);
-}
+  const complete = phase1Complete(tournament);
 
-export function enteredCount(matches: Match[]): number {
-  return matches.filter((match) => !isBye(match) && match.status !== 'waiting').length;
-}
+  for (const entry of entries.values()) {
+    entry.byeCredit = complete ? byeCredit(entry, tournament.settings.byePoints) : 0;
+    entry.differential = entry.differentialFromMatches + entry.byeCredit;
+  }
 
-export function playableCount(matches: Match[]): number {
-  return matches.filter((match) => !isBye(match)).length;
+  const byDifferential = new Map<number, RankingEntry[]>();
+
+  for (const entry of entries.values()) {
+    const bucket = byDifferential.get(entry.differential);
+    if (bucket) {
+      bucket.push(entry);
+    } else {
+      byDifferential.set(entry.differential, [entry]);
+    }
+  }
+
+  const ordered: RankingEntry[] = [];
+  const tieGroups: TeamId[][] = [];
+  const unresolvedTies: TeamId[][] = [];
+
+  for (const [, bucket] of [...byDifferential.entries()].sort((a, b) => b[0] - a[0])) {
+    const contenders: Contender[] = bucket.map((entry) => ({
+      team: entry.team,
+      wins: entry.wins,
+      pointsScored: entry.pointsScored,
+    }));
+
+    for (const block of separate(
+      contenders,
+      tournament.matches,
+      tournament.settings.forfeitDifferential
+    )) {
+      const teams = block.map((contender) => contender.team);
+      const decision = block.length > 1 ? findDecision(tournament.tieBreaks, teams) : null;
+      const finalOrder = decision ? decision.order : teams;
+
+      if (block.length > 1) {
+        tieGroups.push(teams);
+
+        if (!decision) {
+          unresolvedTies.push(teams);
+        }
+      }
+
+      for (const team of finalOrder) {
+        const entry = entries.get(team);
+        if (entry) {
+          ordered.push(entry);
+        }
+      }
+    }
+  }
+
+  return { entries: ordered, tieGroups, unresolvedTies, complete };
 }

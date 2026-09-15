@@ -32,6 +32,8 @@ describe('tournament', () => {
       matchCount: 3,
       settings: DEFAULT_SETTINGS,
       matches: [],
+      tieBreaks: [],
+      withdrawn: [],
       created: t0,
       modified: t0,
       opened: t0,

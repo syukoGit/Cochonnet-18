@@ -4,7 +4,7 @@ import { addTeam } from '@/domain/tournament/teams';
 import { createTournament } from '@/domain/tournament/tournament';
 import type { Tournament } from '@/domain/tournament/types';
 import { drawPhase1 } from './draw';
-import { computeRanking, enteredCount, playableCount } from './ranking';
+import { enteredCount, playableCount, rankTeams } from './ranking';
 
 const t0 = '2026-09-15T09:00:00.000Z';
 
@@ -37,21 +37,21 @@ function withScore(tournament: Tournament, index: number, home: number, away: nu
 
 describe('phase 1 ranking', () => {
   it('starts every team at zero', () => {
-    const ranking = computeRanking(tournamentOf(4, 2));
+    const { entries } = rankTeams(tournamentOf(4, 2));
 
-    expect(ranking).toHaveLength(4);
-    expect(ranking.every((entry) => entry.differential === 0 && entry.played === 0)).toBe(true);
+    expect(entries).toHaveLength(4);
+    expect(entries.every((entry) => entry.differential === 0 && entry.played === 0)).toBe(true);
   });
 
   it('gives the gap to the winner and takes it from the loser', () => {
     const tournament = withScore(tournamentOf(4, 2), 0, 13, 7);
-    const ranking = computeRanking(tournament);
+    const { entries } = rankTeams(tournament);
 
-    expect(ranking[0]?.differential).toBe(6);
-    expect(ranking.at(-1)?.differential).toBe(-6);
-    expect(ranking[0]?.wins).toBe(1);
-    expect(ranking[0]?.pointsScored).toBe(13);
-    expect(ranking.at(-1)?.pointsScored).toBe(7);
+    expect(entries[0]?.differential).toBe(6);
+    expect(entries.at(-1)?.differential).toBe(-6);
+    expect(entries[0]?.wins).toBe(1);
+    expect(entries[0]?.pointsScored).toBe(13);
+    expect(entries.at(-1)?.pointsScored).toBe(7);
   });
 
   it('counts a forfeit as a win worth the configured differential, scoring no point', () => {
@@ -64,19 +64,19 @@ describe('phase 1 ranking', () => {
       ),
     };
 
-    const ranking = computeRanking(tournament);
+    const { entries } = rankTeams(tournament);
 
-    expect(ranking[0]?.differential).toBe(base.settings.forfeitDifferential);
-    expect(ranking[0]?.wins).toBe(1);
-    expect(ranking[0]?.pointsScored).toBe(0);
-    expect(ranking.at(-1)?.differential).toBe(-base.settings.forfeitDifferential);
+    expect(entries[0]?.differential).toBe(base.settings.forfeitDifferential);
+    expect(entries[0]?.wins).toBe(1);
+    expect(entries[0]?.pointsScored).toBe(0);
+    expect(entries.at(-1)?.differential).toBe(-base.settings.forfeitDifferential);
   });
 
   it('counts byes without crediting them during the phase', () => {
-    const ranking = computeRanking(tournamentOf(5, 3));
+    const { entries } = rankTeams(tournamentOf(5, 3));
 
-    expect(ranking.some((entry) => entry.byes > 0)).toBe(true);
-    expect(ranking.every((entry) => entry.differential === 0)).toBe(true);
+    expect(entries.some((entry) => entry.byes > 0)).toBe(true);
+    expect(entries.every((entry) => entry.differential === 0)).toBe(true);
   });
 
   it('ignores matches with no result', () => {
@@ -88,16 +88,16 @@ describe('phase 1 ranking', () => {
     const tournament = withScore(withScore(tournamentOf(6, 3), 0, 13, 4), 1, 13, 11);
     const roundTripped = JSON.parse(JSON.stringify(tournament)) as Tournament;
 
-    expect(computeRanking(roundTripped)).toEqual(computeRanking(tournament));
-    expect(computeRanking(tournament)).toEqual(computeRanking(tournament));
+    expect(rankTeams(roundTripped)).toEqual(rankTeams(tournament));
+    expect(rankTeams(tournament)).toEqual(rankTeams(tournament));
   });
 
   it('I11 — the order never depends on team insertion order', () => {
     const tournament = withScore(tournamentOf(6, 3), 0, 13, 4);
     const shuffled = { ...tournament, teams: [...tournament.teams].reverse() };
 
-    expect(computeRanking(shuffled).map((entry) => entry.team)).toEqual(
-      computeRanking(tournament).map((entry) => entry.team)
+    expect(rankTeams(shuffled).entries.map((entry) => entry.team)).toEqual(
+      rankTeams(tournament).entries.map((entry) => entry.team)
     );
   });
 });

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { clearEntry, enterForfeit, enterScore } from '@/domain/phase1/entry';
 import { startPhase1 } from '@/domain/phase1/start';
+import { recordDecision } from '@/domain/phase1/tiebreak';
+import { closePhase1, reinstate, reopenPhase1, withdraw } from '@/domain/phase2/split';
 import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
 import type { Settings } from '@/domain/tournament/settings';
 import {
@@ -50,6 +52,11 @@ interface TournamentsState {
   enterScore: (matchId: MatchId, score: Score) => void;
   enterForfeit: (matchId: MatchId, absent: TeamId) => void;
   clearEntry: (matchId: MatchId) => void;
+  closePhase1: () => void;
+  reopenPhase1: () => void;
+  withdraw: (team: TeamId) => void;
+  reinstate: (team: TeamId) => void;
+  settleTie: (teams: TeamId[], order: TeamId[]) => void;
 }
 
 function now(): string {
@@ -215,6 +222,30 @@ export const useTournaments = create<TournamentsState>()(
 
     clearEntry: (matchId) => {
       applyToCurrent(set, get, (tournament) => clearEntry(tournament, matchId, now()));
+    },
+
+    closePhase1: () => {
+      applyToCurrent(set, get, (tournament) => closePhase1(tournament, now()));
+    },
+
+    reopenPhase1: () => {
+      applyToCurrent(set, get, (tournament) => reopenPhase1(tournament, now()));
+    },
+
+    withdraw: (team) => {
+      applyToCurrent(set, get, (tournament) => withdraw(tournament, team, now()));
+    },
+
+    reinstate: (team) => {
+      applyToCurrent(set, get, (tournament) => reinstate(tournament, team, now()));
+    },
+
+    settleTie: (teams, order) => {
+      applyToCurrent(set, get, (tournament) => ({
+        ...tournament,
+        tieBreaks: recordDecision(tournament.tieBreaks, { teams, order }),
+        modified: now(),
+      }));
     },
 
     remove: async (id) => {
