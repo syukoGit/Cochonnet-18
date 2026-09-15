@@ -10,7 +10,7 @@ import type { TeamId } from '@/domain/ids';
 import { isBye, opponents } from '@/domain/match/types';
 import type { Match } from '@/domain/match/types';
 import { phase1SettingsLocked } from '@/domain/phase1/entry';
-import { computeRanking, enteredCount, playableCount } from '@/domain/phase1/ranking';
+import { enteredCount, phase1Complete, playableCount, rankTeams } from '@/domain/phase1/ranking';
 import { minimumGapFor } from '@/domain/tournament/settings';
 import type { Tournament } from '@/domain/tournament/types';
 import { useTournaments } from '@/store/useTournaments';
@@ -25,7 +25,7 @@ function roundsOf(matches: Match[]): number[] {
 
 export default function Phase1({ tournament }: Phase1Props) {
   const navigate = useNavigate();
-  const { enterScore, enterForfeit, clearEntry, setSetting } = useTournaments();
+  const { enterScore, enterForfeit, clearEntry, setSetting, closePhase1 } = useTournaments();
 
   const rounds = roundsOf(tournament.matches);
   const [activeRound, setActiveRound] = useState(rounds[0] ?? 1);
@@ -55,6 +55,18 @@ export default function Phase1({ tournament }: Phase1Props) {
     <Shell
       title={tournament.name}
       subtitle={`Phase 1 · ${entered} / ${total} matchs saisis`}
+      footer={
+        <>
+          <span className="mr-auto text-sm text-ink-soft">
+            {phase1Complete(tournament)
+              ? 'Tous les matchs sont saisis.'
+              : `${total - entered} ${total - entered > 1 ? 'matchs restants' : 'match restant'}.`}
+          </span>
+          <Button tone="primary" disabled={!phase1Complete(tournament)} onClick={closePhase1}>
+            Clôturer la phase 1
+          </Button>
+        </>
+      }
       actions={
         <>
           <Button
@@ -118,7 +130,7 @@ export default function Phase1({ tournament }: Phase1Props) {
           )}
         </div>
 
-        <RankingPanel ranking={computeRanking(tournament)} nameOf={nameOf} provisional />
+        <RankingPanel ranking={rankTeams(tournament).entries} nameOf={nameOf} provisional />
       </div>
 
       <Dialog

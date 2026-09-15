@@ -31,6 +31,11 @@ export const settingsSchema = z.object({
   minimumGapPhase2: z.number().int().min(0),
 });
 
+export const tieBreakSchema = z.object({
+  teams: z.array(z.number().int().min(1)),
+  order: z.array(z.number().int().min(1)),
+});
+
 export const tournamentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -40,6 +45,8 @@ export const tournamentSchema = z.object({
   matchCount: z.number().int().min(1),
   settings: settingsSchema,
   matches: z.array(matchSchema),
+  tieBreaks: z.array(tieBreakSchema),
+  withdrawn: z.array(z.number().int().min(1)),
   created: z.string().min(1),
   modified: z.string().min(1),
   opened: z.string().min(1),

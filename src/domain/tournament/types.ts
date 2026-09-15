@@ -1,5 +1,6 @@
 import type { TeamId, Timestamp, TournamentId } from '@/domain/ids';
 import type { Match } from '@/domain/match/types';
+import type { TieBreak } from '@/domain/phase1/tiebreak';
 import type { Settings } from './settings';
 
 export type { TeamId, Timestamp, TournamentId };
@@ -22,6 +23,8 @@ export interface Tournament {
   matchCount: number;
   settings: Settings;
   matches: Match[];
+  tieBreaks: TieBreak[];
+  withdrawn: TeamId[];
   created: Timestamp;
   modified: Timestamp;
   opened: Timestamp;

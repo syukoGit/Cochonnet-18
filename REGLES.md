@@ -1,11 +1,16 @@
 # Règles de Cochonnet-18
 
-**Version 1.3** — validée le 14 septembre 2026.
+**Version 1.4** — validée le 15 septembre 2026.
 
 Ce document est la spécification de référence du logiciel. Chaque règle numérotée
 correspond à un test du domaine (`src/domain/`). Toute modification d'une règle
 implique une modification du test correspondant, et inversement.
 
+> **Changements depuis 1.3** — la confrontation directe ordonne sur le différentiel
+> des seuls matchs entre les équipes à égalité (R2.12) ; l'arrondi du crédit
+> d'exemption s'éloigne de zéro, pour ne pas avantager les différentiels négatifs
+> (R2.8) ; une égalité ne s'arbitre que si deux de ses équipes restent en lice (R3.5).
+>
 > **Changements depuis 1.2** — la comparaison des noms d'équipe est normalisée et
 > insensible à la casse (R1.3).
 >
@@ -124,7 +129,10 @@ d'un match ajoute l'écart à son total, le perdant le soustrait.
 **R2.8** — Une équipe exemptée est créditée selon `pointsExemption` :
 
 - `moyenne` — la moyenne des différentiels de ses matchs **effectivement joués**,
-  arrondie au plus proche. Si elle n'en a joué aucun, le crédit est de 0.
+  arrondie au plus proche. Un demi s'arrondit **en s'éloignant de zéro** : +3,5 donne
+  +4 et −3,5 donne −4. L'arrondi natif de la plupart des langages penche vers +∞,
+  ce qui avantagerait les différentiels négatifs. Si l'équipe n'a joué aucun match,
+  le crédit est de 0.
 - `zero` — aucun point.
 - `forfait13` — +13.
 
@@ -151,6 +159,10 @@ des scores. Il n'est jamais stocké.
 1. **Nombre de victoires** (les victoires par forfait comptent).
 2. **Confrontation directe** — ce critère n'est appliqué que si *toutes* les
    équipes encore à égalité se sont rencontrées entre elles. Sinon il est ignoré.
+   Lorsqu'il s'applique, les équipes sont ordonnées sur le **différentiel cumulé de
+   leurs seuls matchs les opposant entre elles**, à l'exclusion de tout autre match.
+   Sur un groupe de deux équipes, cela revient à donner l'avantage à celle qui a
+   gagné leur confrontation.
 3. **Total de points marqués** (un forfait ne contribue pas à ce total).
 
 **R2.13** — Une égalité qui subsiste après ces trois critères est **affichée comme
@@ -192,6 +204,12 @@ consolante = floor(N' / 2)  équipes restantes
 **R3.5** — Tout retrait **recalcule la répartition**. La ligne de coupure se
 déplaçant, une égalité de classement jusque-là sans conséquence peut devenir
 décisive : R2.13 est donc réévaluée après chaque retrait.
+
+Une égalité n'est soumise à l'arbitrage que si **au moins deux de ses équipes sont
+encore en lice**. Le classement de phase 1 conserve les équipes retirées (R3.3),
+mais départager deux équipes dont l'une ne dispute pas la phase 2 ne décide plus
+rien : l'égalité s'éteint, et la décision enregistrée qui la concernait est écartée
+au titre de R2.14.
 
 **R3.6** — La répartition est figée au tirage de la phase 2.
 
