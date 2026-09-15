@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
-import type { Tournament } from '@/domain/tournament/types';
 import { tournamentSchema } from '@/shared/save/schema';
 import { list, read, remove, write } from './repository';
 
@@ -21,7 +20,7 @@ function registerChannels(): void {
       throw new Error('The tournament sent by the renderer does not match the save schema');
     }
 
-    return write(tournamentsDirectory(), parsed.data as Tournament);
+    return write(tournamentsDirectory(), parsed.data);
   });
 }
 

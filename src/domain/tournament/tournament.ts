@@ -1,3 +1,4 @@
+import { DEFAULT_SETTINGS } from './settings';
 import type { Timestamp, Tournament, TournamentId } from './types';
 
 export const MAX_NAME_LENGTH = 80;
@@ -17,6 +18,9 @@ export function createTournament(id: TournamentId, name: string, now: Timestamp)
     phase: 'configuration',
     teams: [],
     nextTeamId: 1,
+    matchCount: 3,
+    settings: DEFAULT_SETTINGS,
+    matches: [],
     created: now,
     modified: now,
     opened: now,

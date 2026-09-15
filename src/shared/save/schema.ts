@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BYE_POINTS_MODES } from '@/domain/tournament/settings';
 import { PHASES } from '@/domain/tournament/types';
 
 export const SAVE_VERSION = 1;
@@ -8,12 +9,35 @@ export const teamSchema = z.object({
   name: z.string().min(1),
 });
 
+export const slotSchema = z.union([
+  z.object({ kind: z.literal('team'), team: z.number().int().min(1) }),
+  z.object({ kind: z.literal('bye') }),
+]);
+
+export const matchSchema = z.object({
+  id: z.number().int().min(1),
+  phase: z.literal('phase1'),
+  round: z.number().int().min(1),
+  slots: z.tuple([slotSchema, slotSchema]),
+  status: z.enum(['waiting', 'played']),
+});
+
+export const settingsSchema = z.object({
+  minimumGapPhase1: z.number().int().min(0),
+  byePoints: z.enum(BYE_POINTS_MODES),
+  forfeitDifferential: z.number().int().min(0),
+  minimumGapPhase2: z.number().int().min(0),
+});
+
 export const tournamentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   phase: z.enum(PHASES),
   teams: z.array(teamSchema),
   nextTeamId: z.number().int().min(1),
+  matchCount: z.number().int().min(1),
+  settings: settingsSchema,
+  matches: z.array(matchSchema),
   created: z.string().min(1),
   modified: z.string().min(1),
   opened: z.string().min(1),
