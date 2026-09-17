@@ -1,11 +1,17 @@
 # Règles de Cochonnet-18
 
-**Version 1.4** — validée le 15 septembre 2026.
+**Version 1.5** — validée le 17 septembre 2026.
 
 Ce document est la spécification de référence du logiciel. Chaque règle numérotée
 correspond à un test du domaine (`src/domain/`). Toute modification d'une règle
 implique une modification du test correspondant, et inversement.
 
+> **Changements depuis 1.4** — annulation et rétablissement sortent du périmètre
+> (R6.7, R6.8, `I13` retirées, §9) ; les sauvegardes de rotation espacent leurs
+> instantanés d'un intervalle minimum, faute de quoi les dix ne couvriraient que
+> quelques secondes de saisie (R6.4) ; l'import d'un événement déjà présent est un
+> conflit que l'organisateur tranche (R6.9).
+>
 > **Changements depuis 1.3** — la confrontation directe ordonne sur le différentiel
 > des seuls matchs entre les équipes à égalité (R2.12) ; l'arrondi du crédit
 > d'exemption s'éloigne de zéro, pour ne pas avantager les différentiels négatifs
@@ -335,7 +341,13 @@ et les tournois passés restent consultables indéfiniment, palmarès compris.
 coupure ne peut pas produire un fichier partiel.
 
 **R6.4** — Dix sauvegardes horodatées sont conservées en rotation **par événement**,
-en plus de son fichier courant.
+en plus de son fichier courant. Un instantané n'est pris que si le précédent date de
+plus de `intervalleSauvegarde`, faute de quoi l'anti-rebond de R6.2 les épuiserait en
+quelques secondes de saisie et la rotation ne protégerait plus de rien.
+
+> Une sauvegarde sert à revenir à un état antérieur cohérent après une fausse
+> manœuvre découverte tard. Dix instantanés couvrant dix secondes ne le permettent
+> pas ; dix instantanés espacés couvrent la matinée.
 
 **R6.5** — Toute sauvegarde relue est validée contre un schéma versionné. Un
 fichier invalide est refusé avec un message explicite, jamais chargé partiellement,
@@ -344,22 +356,15 @@ et **n'empêche pas les autres événements de s'ouvrir**.
 **R6.6** — Au démarrage, l'accueil **liste les événements**, le dernier ouvert en
 tête, chacun avec sa date de dernière saisie et son état d'avancement.
 
-**R6.7** — Chaque mutation est journalisée avec ses patches inverses. Annuler et
-rétablir sont disponibles, **dans les limites de R6.8**.
+**R6.7** — *Retirée du périmètre en 1.5 (journal des mutations). Voir §9.*
 
-**R6.8** — Un verrou — paramètres figés (R1.6), tirage figé (R4.8), match verrouillé
-(R4.12) — est une **propriété de l'état**, pas un événement irréversible : il vit
-dans le journal comme le reste. Mais **l'annulation est bornée** : elle ne franchit
-ni la clôture de la phase 1, ni le gel d'un tirage.
-
-> Annuler sert à rattraper une faute de frappe. Défaire une décision de structure
-> passe par son chemin explicite — l'invalidation en cascade (R4.11) ou le retrait
-> d'équipe (R3.2) — qui annonce ses conséquences et demande confirmation. Sans cette
-> borne, une longue série d'annulations deviendrait une porte dérobée contournant
-> tous les verrous, sans que rien ne soit confirmé ni affiché.
+**R6.8** — *Retirée du périmètre en 1.5 (bornes de l'annulation). Voir §9.*
 
 **R6.9** — Un événement peut être exporté et réimporté sous forme d'un fichier
-`.cochonnet.json`.
+`.cochonnet.json`. Le fichier importé est validé comme n'importe quelle sauvegarde
+(R6.5). Si son identifiant désigne un événement déjà présent, c'est un **conflit** :
+l'application ne tranche pas seule, elle propose de **remplacer** l'événement existant
+ou d'**importer une copie** sous un nouvel identifiant.
 
 ---
 
@@ -435,8 +440,7 @@ sauvegarde reproduit exactement le même ordre.
 tant que l'ensemble des équipes qu'elle départage est inchangé, et écartée dès que
 cet ensemble change.
 
-**I13** — Annuler et rétablir ne franchissent jamais la clôture de la phase 1 ni le
-gel d'un tirage (R6.8). Aucune séquence d'annulations ne lève un verrou.
+**I13** — *Retirée en 1.5 avec R6.7 et R6.8.*
 
 **I14** — Créer, ouvrir ou supprimer un événement ne modifie aucun autre événement.
 Un fichier d'événement illisible n'empêche pas les autres de s'ouvrir.
@@ -458,3 +462,11 @@ inadvertance.
   phases est prévu (R3.2).
 - **Têtes de série en phase 2.** Le tirage est intégralement aléatoire (R4.4), sous
   la seule contrainte R4.5.
+- **Annulation et rétablissement.** Pas de `Ctrl+Z`, pas de journal de mutations
+  (R6.7, R6.8 et `I13` retirées en 1.5). Chaque correction a déjà son chemin explicite,
+  qui annonce ses conséquences et demande confirmation : effacer un résultat et son
+  aval (R4.11, R4.12), retirer ou réintégrer une équipe entre les phases (R3.2),
+  rouvrir la phase 1 (R3.1). Un `Ctrl+Z` transversal aurait doublé ces chemins d'une
+  seconde manière de revenir en arrière, celle-là muette, et serait devenu une porte
+  dérobée contournant les verrous. Les sauvegardes de rotation (R6.4) couvrent le
+  rattrapage tardif.

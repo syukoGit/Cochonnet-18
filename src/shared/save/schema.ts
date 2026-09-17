@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { MATCH_PHASES } from '@/domain/match/types';
 import { BYE_POINTS_MODES } from '@/domain/tournament/settings';
 import { PHASES } from '@/domain/tournament/types';
+import { migrate, MIGRATIONS } from './migrate';
+import type { MigrationTable } from './migrate';
 
 export const SAVE_VERSION = 1;
 
@@ -77,7 +79,17 @@ export type ReadFailure =
 
 export type ReadResult = { ok: true; save: Save } | { ok: false; failure: ReadFailure };
 
-export function readSave(contents: string): ReadResult {
+function versionOf(raw: unknown): number | null {
+  const version = (raw as { version?: unknown } | null)?.version;
+
+  return typeof version === 'number' ? version : null;
+}
+
+function atCurrentVersion(raw: unknown): unknown {
+  return typeof raw === 'object' && raw !== null ? { ...raw, version: SAVE_VERSION } : raw;
+}
+
+export function readSave(contents: string, table: MigrationTable = MIGRATIONS): ReadResult {
   let raw: unknown;
 
   try {
@@ -86,16 +98,26 @@ export function readSave(contents: string): ReadResult {
     return { ok: false, failure: { reason: 'invalid-json', detail: String(error) } };
   }
 
-  const version = (raw as { version?: unknown } | null)?.version;
+  const version = versionOf(raw);
 
-  if (typeof version === 'number' && version !== SAVE_VERSION) {
+  if (version !== null && version > SAVE_VERSION) {
     return {
       ok: false,
       failure: {
         reason: 'unknown-version',
-        detail: `version ${version}, expected ${SAVE_VERSION}`,
+        detail: `version ${version}, this application reads up to ${SAVE_VERSION}`,
       },
     };
+  }
+
+  if (version !== null && version < SAVE_VERSION) {
+    const migrated = migrate(raw, version, SAVE_VERSION, table);
+
+    if (!migrated.ok) {
+      return { ok: false, failure: { reason: 'unknown-version', detail: migrated.detail } };
+    }
+
+    raw = atCurrentVersion(migrated.raw);
   }
 
   const parsed = saveSchema.safeParse(raw);

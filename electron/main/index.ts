@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { tournamentSchema } from '@/shared/save/schema';
 import { list, read, remove, write } from './repository';
+import { exportTo, importFrom, suggestedFileName } from './transfer';
 
 const rendererDevServerUrl = process.env.ELECTRON_RENDERER_URL;
 
@@ -21,6 +22,52 @@ function registerChannels(): void {
     }
 
     return write(tournamentsDirectory(), parsed.data);
+  });
+
+  ipcMain.handle('tournaments:export', async (_event, id: string) => {
+    const tournament = await read(tournamentsDirectory(), id);
+
+    if (!tournament) {
+      return { status: 'failed', detail: `no readable tournament for ${id}` };
+    }
+
+    const chosen = await dialog.showSaveDialog({
+      title: 'Exporter le tournoi',
+      defaultPath: suggestedFileName(tournament),
+      filters: [{ name: 'Tournoi Cochonnet', extensions: ['json'] }],
+    });
+
+    if (chosen.canceled || chosen.filePath.length === 0) {
+      return { status: 'cancelled' };
+    }
+
+    try {
+      await exportTo(chosen.filePath, tournament);
+    } catch (error) {
+      return { status: 'failed', detail: String(error) };
+    }
+
+    return { status: 'written', path: chosen.filePath };
+  });
+
+  ipcMain.handle('tournaments:import', async () => {
+    const chosen = await dialog.showOpenDialog({
+      title: 'Importer un tournoi',
+      properties: ['openFile'],
+      filters: [{ name: 'Tournoi Cochonnet', extensions: ['json'] }],
+    });
+
+    const path = chosen.canceled ? undefined : chosen.filePaths[0];
+
+    if (path === undefined) {
+      return { status: 'cancelled' };
+    }
+
+    const outcome = await importFrom(path);
+
+    return outcome.ok
+      ? { status: 'read', tournament: outcome.tournament }
+      : { status: 'invalid', reason: outcome.reason, detail: outcome.detail };
   });
 }
 

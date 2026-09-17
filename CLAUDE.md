@@ -9,9 +9,9 @@ matches ranked on cumulative point differential, then two knockout brackets — 
 halves of that ranking. It runs on one laptop at the boulodrome. **No server, no network, no phone layout**, and the
 organiser is the only user.
 
-**[`REGLES.md`](REGLES.md) is the source of truth**, at the repository root, versioned with the code. It carries 62
-numbered rules (`R1.1`, `R2.4`, `R4.5`, …) and 14 testable invariants (`I1` … `I14`) that define how a tournament
-runs, from the phase 1 draw to the final podium. **Read it before planning any feature.** When a rule changes, amend
+**[`REGLES.md`](REGLES.md) is the source of truth**, at the repository root, versioned with the code. It carries 60
+numbered rules (`R1.1`, `R2.4`, `R4.5`, …) and 13 testable invariants (`I1` … `I14`, `I13` withdrawn) that define how
+a tournament runs, from the phase 1 draw to the final podium. **Read it before planning any feature.** When a rule changes, amend
 `REGLES.md` first, then the code, then the test — never the other way round.
 
 **Every numbered rule maps to a test in `src/domain/`.** Changing one without the other is the failure mode this
@@ -237,12 +237,24 @@ Writes are **atomic** — temporary file then rename — on every mutation with 
 copy it nor back it up. Every save is validated against a **versioned Zod schema** with explicit migrations, and a
 file that fails validation is refused with a message rather than partially loaded (R6.5).
 
-Mutations are journalled with their inverse Immer patches, which is where undo comes from (R6.7). **A lock is a
-property of the state**, not an irreversible event, so it lives in the journal like everything else — but **undo is
-bounded**: it crosses neither the phase 1 closure nor a frozen draw (R6.8, `I13`). Undo is for a typo. Undoing a
-structural decision goes through its own path — cascade invalidation (R4.11) or team withdrawal (R3.2) — which names
-its consequences and asks for confirmation. Without that bound, a long undo run would be a back door around every
-lock, with nothing confirmed and nothing shown.
+**There is no undo and no mutation journal** — R6.7, R6.8 and `I13` were withdrawn in `REGLES.md` 1.5, and §9 says
+why. Every correction already has its own explicit path, which names its consequences and asks for confirmation:
+clearing a result and its downstream (R4.11, R4.12), withdrawing or reinstating a team between the phases (R3.2),
+reopening phase 1 (R3.1). A transversal `Ctrl+Z` would have duplicated those paths with a second, silent way back,
+and become a back door around every lock. Do not reintroduce one without amending `REGLES.md` first.
+
+Ten timestamped backups per tournament rotate beside the current file, in `tournaments/backups/<id>/` (R6.4). A
+snapshot copies the **previous** contents before the new ones land, and only if the last one is older than
+`BACKUP_INTERVAL_MS` — without that spacing the 500 ms debounce would burn all ten within seconds of typing and the
+rotation would protect nothing. Backups go when the tournament goes: deleting means deleting. The stamp carries no
+`:`, which Windows refuses in a file name, and its text order is its chronological order.
+
+A tournament exports to and imports from a `.cochonnet.json` file, validated on the way in like any other save
+(R6.9). When the imported identifier is already present the application does not choose: it offers to **replace** the
+existing tournament or to import a **copy** under a fresh identifier. Reading a save of an older version runs it
+through [`migrate.ts`](src/shared/save/migrate.ts) first — a table mapping version `n` to a function producing
+version `n + 1`; `readSave` stamps the current version afterwards, so a migration only ever concerns the payload. The
+table is empty today and the mechanism is tested with an injected one, so no fake migration ships.
 
 ## Conventions
 

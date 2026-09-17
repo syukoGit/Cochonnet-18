@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from './settings';
 import {
+  asCopy,
   byMostRecentlyOpened,
+  COPY_SUFFIX,
   createTournament,
   isValidTournamentName,
   markOpened,
+  MAX_NAME_LENGTH,
   normaliseName,
   renameTournament,
 } from './tournament';
@@ -64,5 +67,31 @@ describe('tournament', () => {
     const older = createTournament('t1', 'Older', t0);
     const newer = createTournament('t2', 'Newer', t1);
     expect([older, newer].sort(byMostRecentlyOpened).map((t) => t.id)).toEqual(['t2', 't1']);
+  });
+});
+
+describe('importing a tournament as a copy', () => {
+  it('R6.9 — keeps everything but the identity', () => {
+    const original = createTournament('t1', 'Tournoi', '2026-09-17T09:00:00.000Z');
+    const played = { ...original, phase: 'phase2' as const, matchCount: 5 };
+    const copy = asCopy(played, 't2', '2026-09-17T11:00:00.000Z');
+
+    expect(copy.id).toBe('t2');
+    expect(copy.name).toBe('Tournoi (copie)');
+    expect(copy.phase).toBe('phase2');
+    expect(copy.matchCount).toBe(5);
+    expect(copy.created).toBe('2026-09-17T11:00:00.000Z');
+  });
+
+  it('keeps the suffix visible on a name already at the limit', () => {
+    const long = 'A'.repeat(MAX_NAME_LENGTH);
+    const copy = asCopy(
+      createTournament('t1', long, '2026-09-17T09:00:00.000Z'),
+      't2',
+      '2026-09-17T09:00:00.000Z'
+    );
+
+    expect(copy.name).toHaveLength(MAX_NAME_LENGTH);
+    expect(copy.name.endsWith(COPY_SUFFIX)).toBe(true);
   });
 });

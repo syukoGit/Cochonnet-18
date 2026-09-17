@@ -8,6 +8,7 @@ import { drawBrackets } from '@/domain/phase2/start';
 import { addTeam, removeTeam, renameTeam } from '@/domain/tournament/teams';
 import type { Settings } from '@/domain/tournament/settings';
 import {
+  asCopy,
   byMostRecentlyOpened,
   createTournament,
   markOpened,
@@ -16,11 +17,17 @@ import {
 import type { MatchId } from '@/domain/ids';
 import type { Score } from '@/domain/score/validity';
 import type { TeamId, Tournament, TournamentId } from '@/domain/tournament/types';
-import type { UnreadableTournament } from '@/env';
+import type { ExportOutcome, ImportOutcome, UnreadableTournament } from '@/env';
 
 const WRITE_DEBOUNCE_MS = 500;
 
 const timers = new Map<TournamentId, ReturnType<typeof setTimeout>>();
+
+async function flushWrite(tournament: Tournament): Promise<void> {
+  clearTimeout(timers.get(tournament.id));
+  timers.delete(tournament.id);
+  await window.cochonnet.tournaments.write(tournament);
+}
 
 function scheduleWrite(tournament: Tournament): void {
   clearTimeout(timers.get(tournament.id));
@@ -59,6 +66,9 @@ interface TournamentsState {
   reinstate: (team: TeamId) => void;
   settleTie: (teams: TeamId[], order: TeamId[]) => void;
   drawBrackets: () => void;
+  exportTournament: (id: TournamentId) => Promise<ExportOutcome>;
+  importTournament: () => Promise<ImportOutcome>;
+  adopt: (tournament: Tournament, mode: 'replace' | 'copy') => Promise<TournamentId>;
 }
 
 function now(): string {
@@ -252,6 +262,36 @@ export const useTournaments = create<TournamentsState>()(
 
     drawBrackets: () => {
       applyToCurrent(set, get, (tournament) => drawBrackets(tournament, drawSeed(), now()));
+    },
+
+    exportTournament: async (id) => {
+      const known = get().list.find((tournament) => tournament.id === id);
+
+      if (known) {
+        await flushWrite(known);
+      }
+
+      return window.cochonnet.tournaments.export(id);
+    },
+
+    importTournament: () => window.cochonnet.tournaments.import(),
+
+    adopt: async (tournament, mode) => {
+      const adopted =
+        mode === 'copy' ? asCopy(tournament, newId(), now()) : markOpened(tournament, now());
+
+      await window.cochonnet.tournaments.write(adopted);
+
+      set((state) => {
+        const index = state.list.findIndex((one) => one.id === adopted.id);
+        if (index >= 0) {
+          state.list[index] = adopted;
+        } else {
+          state.list.unshift(adopted);
+        }
+      });
+
+      return adopted.id;
     },
 
     remove: async (id) => {

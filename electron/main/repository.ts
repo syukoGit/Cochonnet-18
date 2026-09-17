@@ -3,6 +3,7 @@ import { mkdir, open, readdir, readFile, rename, rm, unlink } from 'node:fs/prom
 import { join } from 'node:path';
 import type { Tournament } from '@/domain/tournament/types';
 import { readSave, SAVE_VERSION } from '@/shared/save/schema';
+import { discard, snapshot } from './backups';
 
 export interface UnreadableTournament {
   file: string;
@@ -21,10 +22,16 @@ function pathFor(directory: string, id: string): string {
   return join(directory, `${id}${EXTENSION}`);
 }
 
-export async function write(directory: string, tournament: Tournament): Promise<void> {
+export async function write(
+  directory: string,
+  tournament: Tournament,
+  moment: number = Date.now()
+): Promise<void> {
   await mkdir(directory, { recursive: true });
 
   const destination = pathFor(directory, tournament.id);
+
+  await snapshot(directory, tournament.id, destination, moment);
   const temporary = `${destination}.${process.pid}.tmp`;
   const contents = JSON.stringify({ version: SAVE_VERSION, tournament }, null, 2);
 
@@ -93,4 +100,5 @@ export async function list(directory: string): Promise<Inventory> {
 
 export async function remove(directory: string, id: string): Promise<void> {
   await rm(pathFor(directory, id), { force: true });
+  await discard(directory, id);
 }

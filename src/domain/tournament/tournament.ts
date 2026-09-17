@@ -40,6 +40,19 @@ export function renameTournament(tournament: Tournament, name: string, now: Time
   return { ...tournament, name: normalised, modified: now };
 }
 
+export const COPY_SUFFIX = ' (copie)';
+
+export function asCopy(tournament: Tournament, id: TournamentId, now: Timestamp): Tournament {
+  return {
+    ...tournament,
+    id,
+    name: `${normaliseName(tournament.name).slice(0, MAX_NAME_LENGTH - COPY_SUFFIX.length)}${COPY_SUFFIX}`,
+    created: now,
+    modified: now,
+    opened: now,
+  };
+}
+
 export function markOpened(tournament: Tournament, now: Timestamp): Tournament {
   return { ...tournament, opened: now };
 }

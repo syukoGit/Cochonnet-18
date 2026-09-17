@@ -9,6 +9,13 @@ import { isValidTournamentName } from '@/domain/tournament/tournament';
 import type { Tournament, TournamentId } from '@/domain/tournament/types';
 import { useTournaments } from '@/store/useTournaments';
 
+const IMPORT_FAILURES: Record<string, string> = {
+  'unreadable-file': 'Ce fichier est introuvable ou illisible.',
+  'invalid-json': "Ce fichier n'est pas du JSON valide.",
+  'invalid-schema': "Ce fichier n'est pas une sauvegarde Cochonnet.",
+  'unknown-version': "Ce fichier vient d'une version que cette application ne sait pas lire.",
+};
+
 const longDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
 
 function formatDate(timestamp: string): string {
@@ -18,11 +25,14 @@ function formatDate(timestamp: string): string {
 
 export default function Home() {
   const { list, unreadable, loading, load, create, open, remove } = useTournaments();
+  const { exportTournament, importTournament, adopt } = useTournaments();
   const navigate = useNavigate();
 
   const [creationOpen, setCreationOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [toRemove, setToRemove] = useState<Tournament | null>(null);
+  const [incoming, setIncoming] = useState<Tournament | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -44,6 +54,43 @@ export default function Home() {
     void navigate(`/tournoi/${id}`);
   };
 
+  const runExport = async (tournament: Tournament) => {
+    const outcome = await exportTournament(tournament.id);
+
+    if (outcome.status === 'written') {
+      setNotice(`« ${tournament.name} » exporté vers ${outcome.path}`);
+    }
+
+    if (outcome.status === 'failed') {
+      setNotice(`L'export a échoué : ${outcome.detail}`);
+    }
+  };
+
+  const runImport = async () => {
+    const outcome = await importTournament();
+
+    if (outcome.status === 'invalid') {
+      setNotice(IMPORT_FAILURES[outcome.reason] ?? outcome.detail);
+      return;
+    }
+
+    if (outcome.status === 'read') {
+      setIncoming(outcome.tournament);
+    }
+  };
+
+  const confirmImport = async (mode: 'replace' | 'copy') => {
+    if (!incoming) {
+      return;
+    }
+
+    const id = await adopt(incoming, mode);
+    setIncoming(null);
+    void navigate(`/tournoi/${id}`);
+  };
+
+  const conflicts = incoming !== null && list.some((one) => one.id === incoming.id);
+
   const confirmRemoval = async () => {
     if (toRemove) {
       await remove(toRemove.id);
@@ -56,14 +103,23 @@ export default function Home() {
       title="Cochonnet-18"
       subtitle="Tournois"
       actions={
-        <Button
-          tone="primary"
-          onClick={() => {
-            setCreationOpen(true);
-          }}
-        >
-          Nouveau tournoi
-        </Button>
+        <>
+          <Button
+            onClick={() => {
+              void runImport();
+            }}
+          >
+            Importer
+          </Button>
+          <Button
+            tone="primary"
+            onClick={() => {
+              setCreationOpen(true);
+            }}
+          >
+            Nouveau tournoi
+          </Button>
+        </>
       }
     >
       <div className="mx-auto w-full max-w-3xl">
@@ -82,6 +138,19 @@ export default function Home() {
               ))}
             </ul>
             <p className="mt-2 text-ink-soft">Les autres tournois restent utilisables.</p>
+          </div>
+        )}
+
+        {notice !== null && (
+          <div className="mb-5 flex items-start gap-3 rounded-panel border border-line bg-surface p-4 text-sm">
+            <p className="min-w-0 flex-1 wrap-break-word text-ink-soft">{notice}</p>
+            <Button
+              onClick={() => {
+                setNotice(null);
+              }}
+            >
+              Fermer
+            </Button>
           </div>
         )}
 
@@ -117,6 +186,13 @@ export default function Home() {
                   }}
                 >
                   Ouvrir
+                </Button>
+                <Button
+                  onClick={() => {
+                    void runExport(tournament);
+                  }}
+                >
+                  Exporter
                 </Button>
                 <Button
                   tone="danger"
@@ -173,6 +249,51 @@ export default function Home() {
           className="w-full rounded-panel border border-line bg-ground px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
       </Dialog>
+
+      <Dialog
+        open={incoming !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIncoming(null);
+          }
+        }}
+        title={conflicts ? 'Ce tournoi est déjà là' : 'Importer ce tournoi ?'}
+        description={
+          incoming
+            ? conflicts
+              ? `« ${incoming.name} » porte l'identifiant d'un tournoi déjà présent. Remplacer efface la version enregistrée ici ; importer une copie garde les deux.`
+              : `« ${incoming.name} » sera ajouté à la liste.`
+            : undefined
+        }
+        actions={
+          <>
+            <Button
+              onClick={() => {
+                setIncoming(null);
+              }}
+            >
+              Annuler
+            </Button>
+            {conflicts && (
+              <Button
+                onClick={() => {
+                  void confirmImport('copy');
+                }}
+              >
+                Importer une copie
+              </Button>
+            )}
+            <Button
+              tone={conflicts ? 'danger' : 'primary'}
+              onClick={() => {
+                void confirmImport('replace');
+              }}
+            >
+              {conflicts ? 'Remplacer' : 'Importer'}
+            </Button>
+          </>
+        }
+      />
 
       <Dialog
         open={toRemove !== null}
