@@ -69,7 +69,7 @@ export async function list(directory: string): Promise<Inventory> {
   const unreadable: UnreadableTournament[] = [];
 
   for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith(EXTENSION)) {
+    if (!entry.name.endsWith(EXTENSION)) {
       continue;
     }
 

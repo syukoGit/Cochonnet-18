@@ -1,0 +1,19 @@
+{
+  "name": "Twelve teams",
+  "teams": [
+    "Les Boulistes",
+    "Tir et Point",
+    "La Bonne Mène",
+    "Les Carreaux",
+    "Cochonnet Club",
+    "Les Pointeurs",
+    "Fanny Express",
+    "Le Triplette",
+    "Les Doublettes",
+    "Sainte-Boule",
+    "Les Tireurs",
+    "La Mêlée"
+  ],
+  "matchCount": 3,
+  "seed": 42
+}

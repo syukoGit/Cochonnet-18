@@ -1,4 +1,4 @@
-import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -77,6 +77,57 @@ describe('tournament repository', () => {
 
   it('reading an unknown id returns null', async () => {
     expect(await read(directory, 'ghost')).toBeNull();
+  });
+
+  it('I14 — every shape of broken file is named, and none hides the others', async () => {
+    await write(directory, tournament('good', 'Readable'));
+
+    await writeFile(join(directory, 'empty.json'), '', 'utf8');
+    await writeFile(
+      join(directory, 'truncated.json'),
+      '{ "version": 1, "tournament": { "id"',
+      'utf8'
+    );
+    await writeFile(
+      join(directory, 'wrong-shape.json'),
+      JSON.stringify({ version: 1, tournament: { id: 't' } }),
+      'utf8'
+    );
+    await writeFile(join(directory, 'not-an-object.json'), '"just a string"', 'utf8');
+    await writeFile(
+      join(directory, 'from-the-future.json'),
+      JSON.stringify({ version: 99 }),
+      'utf8'
+    );
+    await mkdir(join(directory, 'a-directory.json'));
+
+    const inventory = await list(directory);
+    const reasonOf = (file: string) =>
+      inventory.unreadable.find((entry) => entry.file === file)?.reason;
+
+    expect(inventory.tournaments.map((one) => one.id)).toEqual(['good']);
+    expect(inventory.unreadable).toHaveLength(6);
+    expect(reasonOf('empty.json')).toBe('invalid-json');
+    expect(reasonOf('truncated.json')).toBe('invalid-json');
+    expect(reasonOf('wrong-shape.json')).toBe('invalid-schema');
+    expect(reasonOf('not-an-object.json')).toBe('invalid-schema');
+    expect(reasonOf('from-the-future.json')).toBe('unknown-version');
+    expect(reasonOf('a-directory.json')).toBe('unreadable-file');
+
+    for (const entry of inventory.unreadable) {
+      expect(entry.detail.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('I14 — reading one tournament never touches another', async () => {
+    await write(directory, tournament('t1', 'One'));
+    await write(directory, tournament('t2', 'Two'));
+
+    const before = await readFile(join(directory, 't2.json'), 'utf8');
+    await read(directory, 't1');
+    await remove(directory, 't3');
+
+    expect(await readFile(join(directory, 't2.json'), 'utf8')).toBe(before);
   });
 
   it('removing twice does not complain', async () => {

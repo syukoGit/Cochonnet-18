@@ -79,9 +79,11 @@ npm run verify           # everything CI runs — the one to run before a commit
 npm run test             # Vitest, runs in seconds
 npm run test:watch       # the same, in watch mode
 npm run test:coverage    # the same, with the coverage thresholds enforced
+npm run test:budget      # the recompute budget, uninstrumented — coverage would triple the numbers
 npm run typecheck        # tsc -b across the electron and renderer projects
 npm run lint             # eslint with --max-warnings 0
 npm run check:cycles     # refuses any import cycle across src/ and electron/
+npm run replay -- <file> # runs a scenario through the domain and prints the whole tournament
 npm run format           # prettier over everything but the Markdown
 npm run format:check     # the same, without writing — fails instead
 npm run build            # typecheck then electron-vite build into out/
@@ -92,10 +94,15 @@ npm run dist-win         # NSIS installer into release/
 useful on their own.
 
 **`npm run verify` is the contract with CI.** It chains the same checks that CI runs as five parallel jobs —
-`format`, `lint` (which also runs `check:cycles`), `typecheck`, `test`, `build` — so a green run locally means a
-green run on GitHub. CI adds one
-thing it cannot: on `main` and on tags, a sixth job builds the Windows installer and **fails if the asar contains
-`node_modules`**.
+`format`, `lint` (which also runs `check:cycles`), `typecheck`, `test` (coverage then budget), `build` — so a green
+run locally means a green run on GitHub. CI adds one thing it cannot: on `main` and on tags, a sixth job builds the
+Windows installer and **fails if the asar contains `node_modules`**.
+
+**The budget test is the one whose result depends on the machine.** `test:coverage` excludes it and `test:budget`
+runs it on its own with instrumentation off — under v8 coverage the same recompute measures about four times its real
+cost, which would make the budget meaningless. If it ever fails on a CI runner rather than on a development machine,
+that is a decision to take, not a number to nudge: either the budget is about the organiser's laptop, and the CI step
+goes, or it is a floor, and it moves.
 
 **CI runs on pull requests, and on pushes to `main` and to tags — never on a branch push.** A branch push and its
 pull request would otherwise fire the same run twice. The consequence is that work on a branch with no open pull
@@ -104,6 +111,15 @@ request gets no CI at all, so `npm run verify` before a commit is not a nicety, 
 The suite carries the whole regression net and runs in seconds, so there is no reason to skip it. It covers
 `src/**/*.test.ts` and `electron/**/*.test.ts`, under the `node` environment and with `@` aliased to `src` — the
 absence of a DOM is deliberate, and it is a second guard on the purity of `src/domain`.
+
+[`src/domain/replay.ts`](src/domain/replay.ts) runs a whole tournament from a JSON scenario — teams, round count,
+seed, optional pinned scores and withdrawals — by calling **the same functions the store calls**, never a second
+implementation of the rules. `npm run replay -- scenarios/twelve-teams.json` prints the draw, the ranking, the split,
+both brackets and both podiums, in English, and the printed podium must match what the interface gives for the same
+scenario. That is how a reported bug is reproduced without clicking, and it is what the field-size sweep in
+[`replay.test.ts`](src/domain/replay.test.ts) drives, from 2 teams to 65. Where the ranking criteria cannot separate
+two teams the tool stands in for the organiser, settles the tie from the seed, and **lists every tie it settled** —
+a replay that silently invented an order would not be a replay.
 
 **typescript-eslint is pointed at the two project files explicitly**, not left to discover them. The root
 `tsconfig.json` is solution-style — `files: []` plus `references` — so it contains no file of its own; with
@@ -196,6 +212,20 @@ third place from the play-off when there is one or from the lone semi final when
 
 Fields land in the slice that first reads them, so at any point the `Match` on disk may carry fewer of them than this
 block shows — check `src/domain/match/types.ts` rather than assuming.
+
+### The recompute budget
+
+Nothing is memoised. A screen recomputes the ranking, the split, every bracket occupant, both podiums and the
+rematch count from the tournament alone, and [`performance.test.ts`](src/domain/performance.test.ts) holds that to
+**one frame — 16 ms — at 64 teams** (R1.4's guaranteed size). Measured on a development machine it costs about 6 ms,
+so the headroom is real. Twice that field is about four times the cost — `podiumOf` recomputes the ranking through
+`splitOf` on every call, and the ranking itself is not linear — which is why the second budget test only asks that
+128 teams stay usable, past the size anything is promised at.
+
+**Do not add a cache to buy that back** unless the 64-team budget actually breaks. A memoised ranking is a cache to
+invalidate on every score, every withdrawal and every tie decision, which is precisely the class of bug this rework
+exists to remove; paying six milliseconds to keep the state the single source of truth is the trade this project has
+already chosen.
 
 ### The two algorithms
 
