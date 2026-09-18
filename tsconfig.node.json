@@ -23,6 +23,8 @@
   },
   "include": [
     "electron/**/*.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts",
     "src/cli/**/*.ts",
     "src/domain/**/*.ts",
     "src/shared/**/*.ts",

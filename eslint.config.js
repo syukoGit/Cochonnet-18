@@ -102,12 +102,18 @@ export default tseslint.config([
   },
 
   {
-    files: ['electron/**/*.ts', 'electron.vite.config.ts', 'vitest.config.ts'],
+    files: [
+      'electron/**/*.ts',
+      'e2e/**/*.ts',
+      'electron.vite.config.ts',
+      'vitest.config.ts',
+      'playwright.config.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
 
   {
-    files: ['**/*.test.ts'],
+    files: ['**/*.test.ts', 'e2e/**/*.ts'],
     rules: { '@typescript-eslint/no-unnecessary-condition': 'off' },
   },
 

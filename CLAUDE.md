@@ -64,8 +64,16 @@ tournaments live in. **Never change either casually**: a new id installs a secon
 silently leaves every past event behind in the old directory.
 
 Keep the `electron-builder` `files` glob tight — an installer that bundles the whole of `node_modules` is several
-hundred megabytes of nothing. On Windows, check that an unsigned build still opens past SmartScreen; an installer that
-frightens the organiser is a broken installer.
+hundred megabytes of nothing. `files` is `out/**/*` plus `package.json`, and the asar holds **fourteen entries**: the
+three bundles, the three logos, the html and the manifest. CI re-checks that on every packaged build.
+
+**The installer is unsigned**, confirmed rather than assumed — `Get-AuthenticodeSignature` reports `NotSigned`, the
+`signing with signtool.exe` lines in the electron-builder log notwithstanding. SmartScreen therefore shows
+*"Windows a protégé votre ordinateur"* on the first run of each new version, and the organiser has to click
+**Informations complémentaires → Exécuter quand même**. Say so wherever the installer is handed over; an organiser
+who meets that dialog without warning will assume the file is broken. Signing means buying a certificate, and the
+reputation that quiets SmartScreen accrues per certificate over time — decide that when there is a budget for it,
+not on the eve of a tournament.
 
 ## Commands
 
@@ -80,6 +88,7 @@ npm run test             # Vitest, runs in seconds
 npm run test:watch       # the same, in watch mode
 npm run test:coverage    # the same, with the coverage thresholds enforced
 npm run test:budget      # the recompute budget, uninstrumented — coverage would triple the numbers
+npm run test:e2e         # builds, then drives the real Electron application with Playwright
 npm run typecheck        # tsc -b across the electron and renderer projects
 npm run lint             # eslint with --max-warnings 0
 npm run check:cycles     # refuses any import cycle across src/ and electron/
@@ -95,8 +104,12 @@ useful on their own.
 
 **`npm run verify` is the contract with CI.** It chains the same checks that CI runs as five parallel jobs —
 `format`, `lint` (which also runs `check:cycles`), `typecheck`, `test` (coverage then budget), `build` — so a green
-run locally means a green run on GitHub. CI adds one thing it cannot: on `main` and on tags, a sixth job builds the
-Windows installer and **fails if the asar contains `node_modules`**.
+run locally means a green run on GitHub.
+
+CI runs two things `verify` does not. **`npm run test:e2e` is its own job**, on Windows, because it builds and then
+drives a real Electron process for about forty seconds — too slow for the pre-commit loop, so it is deliberately out
+of `verify`. **Run it yourself before any commit that touches the interface**: it is the only check that clicks. And
+on `main` and on tags, a job builds the Windows installer and **fails if the asar contains `node_modules`**.
 
 **The budget test is the one whose result depends on the machine.** `test:coverage` excludes it and `test:budget`
 runs it on its own with instrumentation off — under v8 coverage the same recompute measures about four times its real
@@ -212,6 +225,28 @@ third place from the play-off when there is one or from the lone semi final when
 
 Fields land in the slice that first reads them, so at any point the `Match` on disk may carry fewer of them than this
 block shows — check `src/domain/match/types.ts` rather than assuming.
+
+### The defects the v1 had
+
+The v1 is still readable on `main`, and [`regression.test.ts`](src/domain/regression.test.ts) replays eleven of its
+defects — each named after the v1 file it came from, each now unwritable rather than merely fixed:
+
+| | v1 | what makes it impossible now |
+|---|---|---|
+| D1 | `eventSlice.ts setPhase2Winner` wrote a child's winner into the parent's `teams` and **never cleared the parent's `winnerIndex`** | occupancy is derived, and a write clears everything downstream (R4.11) |
+| D2 | `schedule.ts` keyed matches by `teamA: string`, `phase2.ts` by `teamIds: number[]` | one stable `TeamId`, a name is only a label |
+| D3 | `schedule.ts shuffle` called `Math.random()` | the draw takes a seed, stored with the tournament (R4.7) |
+| D4 | `generateRounds` left the middle team out on an odd field, with no record | phantom team, one bye per round (R2.2, `I1` – `I3`) |
+| D5 | `computeRanking` walked only played matches, so resting scored nothing | bye credit at the closing (R2.8, R2.9) |
+| D6 | `list.sort((a, b) => b.score - a.score)` fell back on insertion order | wins, head to head, points scored, then the organiser (R2.12, R2.13) |
+| D7 | a drawn score hit neither branch and vanished | a draw is refused at the door (R2.4) |
+| D8 | `scoreA?: number` accepted 7–3 and 20–19 alike | one validity function, tested against a simulation (`I4`) |
+| D9 | `persistence.ts` kept three backups in `localStorage` | one file per tournament, ten rotating backups (R6.1, R6.4) |
+| D10 | sixty lines of bracket algebra inside a Redux reducer | `src/domain`, which knows nothing of React or Zustand |
+| D11 | `generateBracketTree` documented that "branches can have different heights" | pad to a power of two, byes in round 1 (R4.1 – R4.3) |
+
+That catalogue is **re-derived from the v1 source**, not from the original audit's numbering, which is not in the
+repository. If a defect is ever reported as "B-0n", map it onto this table before trusting the number.
 
 ### The recompute budget
 
