@@ -49,7 +49,7 @@ of the logic, and name the concept after the English word even when the spec nam
   hold a value, which turns every defensive check into dead code the linter then asks you to delete. `tsc` and
   `eslint` pass clean — keep them that way.
 - **Zustand + Immer** for state, **Zod** for versioned save schemas, **Vitest + fast-check** for the domain,
-  **Playwright** for the end-to-end run, **Tailwind v4 + Radix** for the interface.
+  **Tailwind v4 + Radix** for the interface.
 
 **The renderer runs from `file://` in the packaged application, and three things follow from that.** They are cheap to
 get wrong and only fail once the installer is built, never in the dev server:
@@ -88,7 +88,6 @@ npm run test             # Vitest, runs in seconds
 npm run test:watch       # the same, in watch mode
 npm run test:coverage    # the same, with the coverage thresholds enforced
 npm run test:budget      # the recompute budget, uninstrumented — coverage would triple the numbers
-npm run test:e2e         # builds, then drives the real Electron application with Playwright
 npm run typecheck        # tsc -b across the electron and renderer projects
 npm run lint             # eslint with --max-warnings 0
 npm run check:cycles     # refuses any import cycle across src/ and electron/
@@ -106,10 +105,9 @@ useful on their own.
 `format`, `lint` (which also runs `check:cycles`), `typecheck`, `test` (coverage then budget), `build` — so a green
 run locally means a green run on GitHub.
 
-CI runs two things `verify` does not. **`npm run test:e2e` is its own job**, on Windows, because it builds and then
-drives a real Electron process for about forty seconds — too slow for the pre-commit loop, so it is deliberately out
-of `verify`. **Run it yourself before any commit that touches the interface**: it is the only check that clicks. And
-on `main` and on tags, a job builds the Windows installer and **fails if the asar contains `node_modules`**.
+CI runs one thing `verify` does not: on `main` and on tags, a job builds the Windows installer and **fails if the
+asar contains `node_modules`**. **Nothing clicks the interface** — there is no end-to-end suite, so a change to a
+screen is verified by running the application, in the dev server and in the packaged build both.
 
 **The budget test is the one whose result depends on the machine.** `test:coverage` excludes it and `test:budget`
 runs it on its own with instrumentation off — under v8 coverage the same recompute measures about four times its real
