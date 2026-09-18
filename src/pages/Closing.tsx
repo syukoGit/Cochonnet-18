@@ -3,20 +3,26 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
+import Rail, { RailBack, RailBrand, RailNote, RailTitle } from '@/components/Rail';
 import Shell from '@/components/Shell';
+import { IconForward, IconWarning } from '@/components/icons';
 import type { TeamId } from '@/domain/ids';
 import { rankTeams } from '@/domain/phase1/ranking';
 import { liveTies, splitOf } from '@/domain/phase2/split';
 import type { Tournament } from '@/domain/tournament/types';
 import { useTournaments } from '@/store/useTournaments';
 
-interface ClosingProps {
-  tournament: Tournament;
-  nav: ReactNode;
-}
+const HEAD = 'px-1.5 py-2.5 text-[11.5px] font-semibold tracking-[0.06em] text-ink-faint uppercase';
+
+const CHIP = 'inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold';
 
 function signed(value: number): string {
   return value > 0 ? `+${value}` : String(value);
+}
+
+interface ClosingProps {
+  tournament: Tournament;
+  nav: ReactNode;
 }
 
 export default function Closing({ tournament, nav }: ClosingProps) {
@@ -33,102 +39,153 @@ export default function Closing({ tournament, nav }: ClosingProps) {
 
   const isWithdrawn = (team: TeamId) => tournament.withdrawn.includes(team);
   const tieOf = (team: TeamId) => ties.find((tie) => tie.includes(team)) ?? null;
-  const groupOf = (team: TeamId) =>
-    isWithdrawn(team) ? null : split.main.includes(team) ? 'principal' : 'consolante';
+  const inMain = (team: TeamId) => split.main.includes(team);
+
+  const lastMainIndex = entries.reduce(
+    (found, entry, index) => (!isWithdrawn(entry.team) && inMain(entry.team) ? index : found),
+    -1
+  );
+
+  const rail = (
+    <Rail>
+      <RailBrand />
+      <RailTitle name={tournament.name} meta={`${tournament.teams.length} équipes`} />
+      {nav}
+      <RailNote title="Répartition">
+        <dl className="flex flex-col gap-2 text-[13px]">
+          <div className="flex items-baseline justify-between gap-2">
+            <dt className="text-rail-soft">Principal</dt>
+            <dd className="font-display text-xl font-bold tabular-nums">{split.main.length}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <dt className="text-rail-soft">Consolante</dt>
+            <dd className="font-display text-xl font-bold tabular-nums">
+              {split.consolation.length}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <dt className="text-rail-faint">Retirées</dt>
+            <dd className="font-display text-xl font-bold text-rail-faint tabular-nums">
+              {tournament.withdrawn.length}
+            </dd>
+          </div>
+        </dl>
+      </RailNote>
+      <RailBack
+        onClick={() => {
+          void navigate('/');
+        }}
+      />
+    </Rail>
+  );
 
   return (
     <Shell
-      title={tournament.name}
-      nav={nav}
-      subtitle={`Clôture · ${split.main.length} au principal, ${split.consolation.length} en consolante`}
-      actions={
-        <Button
-          onClick={() => {
-            void navigate('/');
-          }}
-        >
-          Tournois
-        </Button>
-      }
+      rail={rail}
+      eyebrow="Étape 3 sur 5"
+      title="Clôture"
+      lead="La moitié haute part au tableau principal, la moitié basse en consolante. Les exemptions viennent d'être créditées."
+      fill
       footer={
         <>
-          <span className="mr-auto text-sm text-ink-soft">
-            {ties.length > 0
-              ? `${ties.length} ${ties.length > 1 ? 'égalités restent' : 'égalité reste'} à trancher.`
-              : 'Répartition prête.'}
-          </span>
+          <p className="mr-auto text-sm text-ink-soft">
+            {ties.length > 0 ? (
+              <strong className="font-semibold text-warning">
+                {ties.length} {ties.length > 1 ? 'égalités restent' : 'égalité reste'} à trancher
+              </strong>
+            ) : (
+              'Répartition prête.'
+            )}
+          </p>
           <Button onClick={reopenPhase1}>Revenir à la phase 1</Button>
           <Button tone="primary" disabled={ties.length > 0} onClick={drawBrackets}>
             Tirer les tableaux
+            <IconForward size={16} />
           </Button>
         </>
       }
     >
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3.5">
         {ties.length > 0 && (
-          <div className="rounded-panel border border-warning bg-warning-ground p-4 text-sm">
-            <p className="font-semibold text-warning">
-              Départage impossible sur les critères de classement
-            </p>
-            <p className="mt-1 text-ink-soft">
-              Les critères — victoires, confrontation directe, points marqués — laissent ces équipes
-              à égalité. Tranche au sort, l&apos;application ne le fera pas à ta place.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {ties.map((tie) => (
-                <Button
-                  key={tie.join('-')}
-                  onClick={() => {
-                    setTieToSettle(tie);
-                  }}
-                >
-                  {tie.map(nameOf).join(' / ')}
-                </Button>
-              ))}
+          <div className="flex shrink-0 gap-3 rounded-card border border-warning-line bg-warning-ground p-4 shadow-[inset_3px_0_0_var(--c-warning)]">
+            <IconWarning size={18} className="mt-0.5 shrink-0 text-warning" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[14.5px] font-semibold text-warning">
+                {ties.length > 1
+                  ? `${ties.length} égalités que les critères ne départagent pas`
+                  : 'Une égalité que les critères ne départagent pas'}
+              </p>
+              <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
+                Victoires, confrontation directe et points marqués donnent le même résultat. Tranche
+                au sort, l&apos;application ne le fera pas à ta place.
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {ties.map((tie) => (
+                  <Button
+                    key={tie.join('-')}
+                    onClick={() => {
+                      setTieToSettle(tie);
+                    }}
+                  >
+                    Trancher : {tie.map(nameOf).join(' / ')}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        <div className="overflow-hidden rounded-panel border border-line bg-surface">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-ink-faint">
-                <th className="py-2 pl-4 pr-2 font-medium">#</th>
-                <th className="px-2 py-2 font-medium">Équipe</th>
-                <th className="px-2 py-2 text-right font-medium">Diff.</th>
-                <th className="px-2 py-2 text-right font-medium">dont exempt.</th>
-                <th className="px-2 py-2 font-medium">Tableau</th>
-                <th className="py-2 pl-2 pr-4 font-medium"></th>
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-card border border-line bg-surface">
+          <table className="w-full text-[14.5px]">
+            <thead className="sticky top-0 bg-surface">
+              <tr className="text-left">
+                <th className={`${HEAD} pl-5`}>#</th>
+                <th className={HEAD}>Équipe</th>
+                <th className={`${HEAD} text-right`}>Différentiel</th>
+                <th className={`${HEAD} text-right`}>dont exempt.</th>
+                <th className={HEAD}>Tableau</th>
+                <th className={`${HEAD} pr-5 text-right`}>Présence</th>
               </tr>
             </thead>
             <tbody>
               {entries.map((entry, index) => {
-                const group = groupOf(entry.team);
+                const out = isWithdrawn(entry.team);
                 const tie = tieOf(entry.team);
+                const main = !out && inMain(entry.team);
 
                 return (
                   <tr
                     key={entry.team}
-                    className={`border-t border-line-soft ${isWithdrawn(entry.team) ? 'text-ink-faint line-through' : ''}`}
+                    className={`border-t border-line-soft ${index === lastMainIndex + 1 ? 'border-t-2 border-t-line' : ''}`}
                   >
-                    <td className="py-2 pl-4 pr-2 tabular-nums text-ink-faint">{index + 1}</td>
-                    <td className="max-w-0 truncate px-2 py-2">
-                      {nameOf(entry.team)}
+                    <td className="py-2 pr-1.5 pl-5 tabular-nums text-ink-faint">{index + 1}</td>
+                    <td className="max-w-0 truncate px-1.5 py-2">
+                      <span className={out ? 'text-ink-faint line-through' : 'font-medium'}>
+                        {nameOf(entry.team)}
+                      </span>
                       {tie && (
-                        <span className="ml-2 rounded-panel bg-warning-ground px-1.5 py-0.5 text-xs text-warning">
+                        <span className={`${CHIP} ml-2 bg-warning-ground text-warning`}>
                           à égalité
                         </span>
                       )}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium tabular-nums">
+                    <td
+                      className={`px-1.5 py-2 text-right font-display font-bold tabular-nums ${out ? 'text-ink-faint' : entry.differential > 0 ? 'text-success' : entry.differential < 0 ? 'text-accent' : 'text-ink-soft'}`}
+                    >
                       {signed(entry.differential)}
                     </td>
-                    <td className="px-2 py-2 text-right tabular-nums text-ink-soft">
+                    <td className="px-1.5 py-2 text-right tabular-nums text-ink-faint">
                       {entry.byes > 0 ? signed(entry.byeCredit) : ''}
                     </td>
-                    <td className="px-2 py-2 text-ink-soft">{group ?? 'retirée'}</td>
-                    <td className="py-2 pl-2 pr-4 text-right">
-                      {isWithdrawn(entry.team) ? (
+                    <td className="px-1.5 py-2">
+                      <span
+                        className={`${CHIP} ${out ? 'bg-sunken text-ink-faint' : main ? 'bg-accent-ground text-accent' : 'bg-success-ground text-success'}`}
+                      >
+                        {out ? 'retirée' : main ? 'Principal' : 'Consolante'}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-5 pl-1.5 text-right">
+                      {out ? (
                         <Button
                           onClick={() => {
                             reinstate(entry.team);
@@ -138,7 +195,7 @@ export default function Closing({ tournament, nav }: ClosingProps) {
                         </Button>
                       ) : (
                         <Button
-                          tone="danger"
+                          tone="quiet"
                           onClick={() => {
                             withdraw(entry.team);
                           }}
@@ -157,8 +214,8 @@ export default function Closing({ tournament, nav }: ClosingProps) {
 
       <Dialog
         open={tieToSettle !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+        onOpenChange={(value) => {
+          if (!value) {
             setTieToSettle(null);
           }
         }}
@@ -178,6 +235,7 @@ export default function Closing({ tournament, nav }: ClosingProps) {
           {tieToSettle?.map((team) => (
             <Button
               key={team}
+              className="min-h-[52px] justify-start"
               onClick={() => {
                 settleTie(tieToSettle, [team, ...tieToSettle.filter((one) => one !== team)]);
                 setTieToSettle(null);

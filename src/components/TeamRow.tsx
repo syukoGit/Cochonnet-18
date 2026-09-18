@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import Button from '@/components/Button';
+import IconButton from '@/components/IconButton';
+import { IconTrash } from '@/components/icons';
 import type { TeamNameIssue } from '@/domain/tournament/teams';
 import type { Team } from '@/domain/tournament/types';
 
@@ -34,9 +35,9 @@ export default function TeamRow({ team, issueOf, onRename, onRemove }: TeamRowPr
   };
 
   return (
-    <li className="flex items-start gap-2 px-4 py-2">
-      <span className="w-10 pt-2 text-right font-mono text-sm text-ink-faint">{team.id}</span>
-      <div className="flex-1">
+    <li className="flex items-center gap-3 border-b border-line-soft py-1 pr-2 pl-4 last:border-b-0">
+      <span className="w-7 shrink-0 text-right font-mono text-xs text-ink-faint">{team.id}</span>
+      <div className="min-w-0 flex-1">
         <input
           value={draft}
           onChange={(changeEvent) => {
@@ -52,13 +53,13 @@ export default function TeamRow({ team, issueOf, onRename, onRemove }: TeamRowPr
             }
           }}
           aria-label={`Nom de l'équipe ${team.id}`}
-          className="w-full rounded-panel border border-transparent bg-transparent px-3 py-2 hover:border-line focus-visible:border-line focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+          className="h-10 w-full rounded-panel border border-transparent bg-transparent px-2.5 hover:border-line focus-visible:border-line focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
-        {issue && <p className="mt-1 px-3 text-sm text-warning">{ISSUE_MESSAGES[issue]}</p>}
+        {issue && <p className="px-2.5 pb-1 text-xs text-warning">{ISSUE_MESSAGES[issue]}</p>}
       </div>
-      <Button tone="danger" onClick={onRemove}>
-        Retirer
-      </Button>
+      <IconButton tone="ghost" label={`Retirer ${team.name}`} onClick={onRemove}>
+        <IconTrash size={16} />
+      </IconButton>
     </li>
   );
 }

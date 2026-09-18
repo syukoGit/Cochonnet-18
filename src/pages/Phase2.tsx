@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import BracketGrid from '@/components/BracketGrid';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
-import { lastRoundOf, matchLabel, slotLabel } from '@/components/labels';
+import Rail, { RailBack, RailBrand, RailNote, RailTitle } from '@/components/Rail';
 import ScoreInput from '@/components/ScoreInput';
 import Shell from '@/components/Shell';
+import { IconWarning } from '@/components/icons';
+import { lastRoundOf, matchLabel, slotLabel } from '@/components/labels';
 import type { MatchId, TeamId } from '@/domain/ids';
 import { invalidatedBy } from '@/domain/match/cascade';
 import { occupantsIn } from '@/domain/match/resolve';
@@ -23,7 +25,7 @@ interface Phase2Props {
 }
 
 const BRACKET_LABELS: Record<BracketPhase, string> = {
-  main: 'Tournoi principal',
+  main: 'Principal',
   consolation: 'Consolante',
 };
 
@@ -60,90 +62,105 @@ export default function Phase2({ tournament, nav }: Phase2Props) {
     return `${round} · ${home} — ${away}`;
   };
 
+  const rail = (
+    <Rail>
+      <RailBrand />
+      <RailTitle
+        name={tournament.name}
+        meta={`${tournament.teams.length - tournament.withdrawn.length} équipes en lice`}
+      />
+      {nav}
+      <RailNote title="Tirage">
+        <p className="text-[13px] leading-relaxed text-rail-soft">
+          {locked
+            ? 'Figé : un résultat est saisi. Le relancer demanderait d’effacer les matchs joués.'
+            : 'Il peut être relancé tant qu’aucun résultat n’est saisi.'}
+        </p>
+      </RailNote>
+      <RailBack
+        onClick={() => {
+          void navigate('/');
+        }}
+      />
+    </Rail>
+  );
+
   return (
     <Shell
-      title={tournament.name}
-      nav={nav}
-      subtitle={`Phase 2 · ${matchesOf('main').length} matchs au principal, ${matchesOf('consolation').length} en consolante`}
+      rail={rail}
+      eyebrow="Étape 4 sur 5"
+      title="Phase 2 — tableaux"
+      fill
       actions={
-        <Button
-          onClick={() => {
-            void navigate('/');
-          }}
+        <div
+          role="tablist"
+          aria-label="Tableau affiché"
+          className="flex gap-1 rounded-card bg-sunken p-1"
         >
-          Tournois
-        </Button>
+          {(['main', 'consolation'] as const).map((phase) => (
+            <button
+              key={phase}
+              type="button"
+              role="tab"
+              aria-selected={phase === active}
+              onClick={() => {
+                setActive(phase);
+              }}
+              className={`min-h-10 rounded-panel px-4 text-[14.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${phase === active ? 'bg-ink font-semibold text-ground' : 'text-ink-soft hover:text-ink'}`}
+            >
+              {BRACKET_LABELS[phase]} · {matchesOf(phase).length}
+            </button>
+          ))}
+        </div>
       }
       footer={
         <>
-          <span className="mr-auto text-sm text-ink-soft">
-            {locked
-              ? 'Un résultat est saisi : le tirage est figé.'
-              : 'Le tirage peut être relancé tant qu’aucun résultat n’est saisi.'}
-          </span>
+          <p className="mr-auto text-sm text-ink-soft">
+            Glisse pour te déplacer, molette pour zoomer. Clique une affiche pour saisir son score ;
+            un résultat enregistré est verrouillé.
+          </p>
           <Button disabled={locked} onClick={drawBrackets}>
             Relancer le tirage
           </Button>
         </>
       }
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-        <div className="flex flex-wrap gap-2">
-          {(['main', 'consolation'] as const).map((phase) => (
-            <Button
-              key={phase}
-              tone={phase === active ? 'primary' : 'quiet'}
-              onClick={() => {
-                setActive(phase);
-              }}
-            >
-              {BRACKET_LABELS[phase]} · {matchesOf(phase).length}
-            </Button>
-          ))}
-        </div>
-
-        {rematches > 0 && (
-          <p className="rounded-panel border border-warning bg-warning-ground px-4 py-3 text-sm">
-            <span className="font-semibold text-warning">
+      {rematches > 0 && (
+        <div className="flex shrink-0 items-center gap-3 rounded-card border border-warning-line bg-warning-ground px-4 py-2.5 shadow-[inset_3px_0_0_var(--c-warning)]">
+          <IconWarning size={18} className="shrink-0 text-warning" />
+          <p className="text-[13.5px] leading-relaxed text-ink-soft">
+            <strong className="font-semibold text-warning">
               {rematches === 1
-                ? '1 affiche de premier tour rejoue un match de la phase 1'
-                : `${rematches} affiches de premier tour rejouent un match de la phase 1`}
-            </span>{' '}
-            <span className="text-ink-soft">
-              — inévitable avec ce groupe : toutes les autres combinaisons en comptaient autant ou
-              davantage.
-            </span>
+                ? '1 affiche de premier tour rejoue un match de la phase 1.'
+                : `${rematches} affiches de premier tour rejouent un match de la phase 1.`}
+            </strong>{' '}
+            Inévitable avec ce groupe : toutes les autres combinaisons en comptaient autant ou
+            davantage.
           </p>
-        )}
+        </div>
+      )}
 
-        {shown.length === 0 ? (
-          <p className="rounded-panel border border-dashed border-line px-4 py-10 text-center text-ink-soft">
-            Ce groupe est trop petit pour un tableau.
-          </p>
-        ) : (
-          <BracketGrid
-            matches={shown}
-            allMatches={tournament.matches}
-            nameOf={nameOf}
-            onSelect={(one) => {
-              setSelected(one.id);
-              setConfirming(false);
-            }}
-          />
-        )}
-      </div>
+      <BracketGrid
+        matches={shown}
+        allMatches={tournament.matches}
+        nameOf={nameOf}
+        onSelect={(one) => {
+          setSelected(one.id);
+          setConfirming(false);
+        }}
+      />
 
       <Dialog
         open={match !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+        onOpenChange={(value) => {
+          if (!value) {
             close();
           }
         }}
         title={match ? labelOf(match) : ''}
         description={
           match && hasResult(match)
-            ? 'Ce résultat est verrouillé. Le corriger efface tout ce qui en découle.'
+            ? 'Déverrouiller, c’est effacer. Les matchs qui en découlent perdent leur résultat.'
             : undefined
         }
         actions={<Button onClick={close}>Fermer</Button>}
@@ -165,6 +182,7 @@ export default function Phase2({ tournament, nav }: Phase2Props) {
                 .map((team) => (
                   <Button
                     key={team}
+                    className="min-h-[52px] justify-start"
                     onClick={() => {
                       enterForfeit(match.id, team);
                       close();
@@ -191,13 +209,13 @@ export default function Phase2({ tournament, nav }: Phase2Props) {
         {match && hasResult(match) && confirming && (
           <div className="flex flex-col gap-3">
             {erased.length > 0 ? (
-              <div className="rounded-panel border border-warning bg-warning-ground p-3 text-sm">
-                <p className="font-semibold text-warning">
+              <div className="rounded-card border border-warning-line bg-warning-ground p-3.5 shadow-[inset_3px_0_0_var(--c-warning)]">
+                <p className="text-[13.5px] font-semibold text-warning">
                   {erased.length === 1
-                    ? '1 match déjà joué sera effacé :'
-                    : `${erased.length} matchs déjà joués seront effacés :`}
+                    ? '1 match déjà joué sera effacé'
+                    : `${erased.length} matchs déjà joués seront effacés`}
                 </p>
-                <ul className="mt-2 flex flex-col gap-1 text-ink-soft">
+                <ul className="mt-2 flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-ink-soft">
                   {erased.map((one) => (
                     <li key={one.id}>{labelOf(one)}</li>
                   ))}

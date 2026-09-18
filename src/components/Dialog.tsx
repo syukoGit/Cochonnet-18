@@ -21,18 +21,24 @@ export default function Dialog({
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
-        <RadixDialog.Overlay className="fixed inset-0 bg-black/40" />
-        <RadixDialog.Content className="fixed top-1/2 left-1/2 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-panel border border-line bg-surface p-5 shadow-lg">
-          <RadixDialog.Title className="text-base font-semibold tracking-tight">
-            {title}
-          </RadixDialog.Title>
-          {description && (
-            <RadixDialog.Description className="mt-1 text-sm text-ink-soft">
-              {description}
-            </RadixDialog.Description>
-          )}
-          {children && <div className="mt-4">{children}</div>}
-          <div className="mt-5 flex justify-end gap-2">{actions}</div>
+        <RadixDialog.Overlay className="fixed inset-0 bg-black/45" />
+        <RadixDialog.Content className="fixed top-1/2 left-1/2 flex w-[min(32rem,calc(100vw-3rem))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-sheet bg-surface shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
+          <div className="px-6 pt-6">
+            <RadixDialog.Title className="font-display text-xl font-semibold tracking-tight">
+              {title}
+            </RadixDialog.Title>
+            {description && (
+              <RadixDialog.Description className="mt-2 text-sm leading-relaxed text-ink-soft">
+                {description}
+              </RadixDialog.Description>
+            )}
+          </div>
+
+          {children && <div className="px-6 pt-4 pb-1">{children}</div>}
+
+          <div className="mt-5 flex justify-end gap-2.5 border-t border-line-soft bg-ground px-6 py-3.5">
+            {actions}
+          </div>
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>

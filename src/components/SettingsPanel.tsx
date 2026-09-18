@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import IconButton from '@/components/IconButton';
+import { IconMinus, IconPlus } from '@/components/icons';
 import { maxMatchCount } from '@/domain/phase1/draw';
 import { BYE_POINTS_MODES } from '@/domain/tournament/settings';
 import type { ByePointsMode, Settings } from '@/domain/tournament/settings';
@@ -9,6 +12,30 @@ const BYE_POINTS_LABELS: Record<ByePointsMode, string> = {
   forfeit13: 'un forfait gagné (+13)',
 };
 
+const NUMBER_FIELD =
+  'h-11 w-20 rounded-panel border border-line bg-ground px-3 text-right font-display text-lg font-bold tabular-nums disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
+
+interface FieldProps {
+  id: string;
+  label: string;
+  hint: string;
+  children: ReactNode;
+}
+
+function Field({ id, label, hint, children }: FieldProps) {
+  return (
+    <div className="flex items-start gap-4 px-4 py-3.5">
+      <div className="min-w-0 flex-1">
+        <label htmlFor={id} className="text-[14.5px] font-semibold">
+          {label}
+        </label>
+        <p className="mt-0.5 text-[13px] leading-relaxed text-ink-soft">{hint}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">{children}</div>
+    </div>
+  );
+}
+
 interface SettingsPanelProps {
   tournament: Tournament;
   disabled?: boolean;
@@ -16,27 +43,6 @@ interface SettingsPanelProps {
   onMatchCountChange: (matchCount: number) => void;
   onSettingChange: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
 }
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-4 py-3">
-      <span className="font-medium">{label}</span>
-      {children}
-      <span className="col-span-2 text-sm text-ink-soft">{hint}</span>
-    </label>
-  );
-}
-
-const numberField =
-  'w-24 disabled:opacity-50 rounded-panel border border-line bg-ground px-3 py-1.5 text-right tabular-nums focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
 
 export default function SettingsPanel({
   tournament,
@@ -49,9 +55,10 @@ export default function SettingsPanel({
   const outOfRange = tournament.matchCount < 1 || tournament.matchCount > limit;
 
   return (
-    <div className="divide-y divide-line-soft overflow-hidden rounded-panel border border-line bg-surface">
+    <div className="divide-y divide-line-soft overflow-hidden rounded-card border border-line bg-surface">
       {includeMatchCount && (
         <Field
+          id="setting-match-count"
           label="Matchs par équipe"
           hint={
             limit === 0
@@ -59,7 +66,17 @@ export default function SettingsPanel({
               : `Entre 1 et ${limit} pour ${tournament.teams.length} équipes.`
           }
         >
+          <IconButton
+            label="Un tour de moins"
+            disabled={disabled || tournament.matchCount <= 1}
+            onClick={() => {
+              onMatchCountChange(tournament.matchCount - 1);
+            }}
+          >
+            <IconMinus size={16} />
+          </IconButton>
           <input
+            id="setting-match-count"
             type="number"
             min={1}
             max={Math.max(limit, 1)}
@@ -68,16 +85,27 @@ export default function SettingsPanel({
             onChange={(changeEvent) => {
               onMatchCountChange(Number(changeEvent.target.value));
             }}
-            className={outOfRange ? `${numberField} border-warning` : numberField}
+            className={outOfRange ? `${NUMBER_FIELD} border-warning text-warning` : NUMBER_FIELD}
           />
+          <IconButton
+            label="Un tour de plus"
+            disabled={disabled || tournament.matchCount >= limit}
+            onClick={() => {
+              onMatchCountChange(tournament.matchCount + 1);
+            }}
+          >
+            <IconPlus size={16} />
+          </IconButton>
         </Field>
       )}
 
       <Field
+        id="setting-gap-phase1"
         label="Écart minimum en phase 1"
         hint="0 : la partie s'arrête au premier à 13. 2 : elle se prolonge jusqu'à deux points d'écart."
       >
         <input
+          id="setting-gap-phase1"
           type="number"
           min={0}
           max={16}
@@ -86,12 +114,17 @@ export default function SettingsPanel({
           onChange={(changeEvent) => {
             onSettingChange('minimumGapPhase1', Number(changeEvent.target.value));
           }}
-          className={numberField}
+          className={NUMBER_FIELD}
         />
       </Field>
 
-      <Field label="Écart minimum en phase 2" hint="Indépendant de la phase 1.">
+      <Field
+        id="setting-gap-phase2"
+        label="Écart minimum en phase 2"
+        hint="Indépendant de la phase 1."
+      >
         <input
+          id="setting-gap-phase2"
           type="number"
           min={0}
           max={16}
@@ -100,21 +133,23 @@ export default function SettingsPanel({
           onChange={(changeEvent) => {
             onSettingChange('minimumGapPhase2', Number(changeEvent.target.value));
           }}
-          className={numberField}
+          className={NUMBER_FIELD}
         />
       </Field>
 
       <Field
+        id="setting-bye-points"
         label="Une équipe exemptée marque"
         hint="Appliqué seulement à la clôture de la phase 1, pour ne pénaliser personne."
       >
         <select
+          id="setting-bye-points"
           disabled={disabled}
           value={tournament.settings.byePoints}
           onChange={(changeEvent) => {
             onSettingChange('byePoints', changeEvent.target.value as ByePointsMode);
           }}
-          className="rounded-panel border border-line bg-ground px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+          className="h-11 rounded-panel border border-line bg-ground px-3 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         >
           {BYE_POINTS_MODES.map((mode) => (
             <option key={mode} value={mode}>
@@ -125,10 +160,12 @@ export default function SettingsPanel({
       </Field>
 
       <Field
+        id="setting-forfeit"
         label="Différentiel d'un forfait"
         hint="Gagné par l'équipe présente, perdu par l'absente. Compte comme une victoire."
       >
         <input
+          id="setting-forfeit"
           type="number"
           min={0}
           max={13}
@@ -137,7 +174,7 @@ export default function SettingsPanel({
           onChange={(changeEvent) => {
             onSettingChange('forfeitDifferential', Number(changeEvent.target.value));
           }}
-          className={numberField}
+          className={NUMBER_FIELD}
         />
       </Field>
     </div>

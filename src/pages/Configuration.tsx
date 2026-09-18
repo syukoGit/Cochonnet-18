@@ -3,9 +3,11 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
+import Rail, { RailBack, RailBrand, RailTitle } from '@/components/Rail';
 import SettingsPanel from '@/components/SettingsPanel';
 import Shell from '@/components/Shell';
 import TeamRow from '@/components/TeamRow';
+import { IconForward, IconPlus } from '@/components/icons';
 import { beyondGuaranteedSize, GUARANTEED_TEAMS, startBlocker } from '@/domain/phase1/start';
 import type { StartBlocker } from '@/domain/phase1/start';
 import { teamNameIssue } from '@/domain/tournament/teams';
@@ -53,70 +55,67 @@ export default function Configuration({ tournament, nav }: ConfigurationProps) {
 
   const teamCount = tournament.teams.length;
 
+  const rail = (
+    <Rail>
+      <RailBrand />
+      <RailTitle
+        name={tournament.name}
+        meta={`${teamCount} ${teamCount > 1 ? 'équipes' : 'équipe'} · ${tournament.matchCount} ${tournament.matchCount > 1 ? 'tours' : 'tour'}`}
+      />
+      {nav}
+      <RailBack
+        onClick={() => {
+          void navigate('/');
+        }}
+      />
+    </Rail>
+  );
+
   return (
     <Shell
-      title={tournament.name}
-      nav={nav}
-      subtitle={`Configuration · ${teamCount} ${teamCount > 1 ? 'équipes' : 'équipe'}`}
-      actions={
-        <Button
-          onClick={() => {
-            void navigate('/');
-          }}
-        >
-          Tournois
-        </Button>
-      }
+      rail={rail}
+      eyebrow="Étape 1 sur 5"
+      title="Configuration"
+      lead="Les règles se figent dès le premier score saisi. Le nom d'une équipe, lui, reste modifiable jusqu'au bout."
       footer={
         <>
-          <span className="mr-auto text-sm text-ink-soft">
+          <p className="mr-auto text-sm text-ink-soft">
             {blocker === null
-              ? `${tournament.matchCount} ${tournament.matchCount > 1 ? 'tours' : 'tour'} seront tirés au sort.`
+              ? `${tournament.matchCount} ${tournament.matchCount > 1 ? 'tours' : 'tour'} seront tirés au sort. La graine du tirage est enregistrée avec le tournoi.`
               : BLOCKER_MESSAGES[blocker]}
-          </span>
+          </p>
           <Button tone="primary" disabled={blocker !== null} onClick={startPhase1}>
             Démarrer la phase 1
+            <IconForward size={16} />
           </Button>
         </>
       }
     >
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        {beyondGuaranteedSize(tournament) && (
-          <p className="rounded-panel border border-warning bg-warning-ground px-4 py-3 text-sm">
-            Au-delà de {GUARANTEED_TEAMS} équipes, l&apos;application fonctionne mais sort du
-            domaine couvert par ses tests.
-          </p>
-        )}
+      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="flex min-w-0 flex-col gap-3">
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-display text-[42px] leading-none font-bold tracking-tight tabular-nums">
+              {teamCount}
+            </span>
+            <span className="text-sm text-ink-soft">
+              {teamCount > 1 ? 'équipes inscrites' : 'équipe inscrite'}
+            </span>
+          </div>
 
-        <div className="overflow-hidden rounded-panel border border-line bg-surface">
-          {teamCount === 0 ? (
-            <p className="px-4 py-8 text-center text-ink-soft">
-              Aucune équipe. Ajoute la première ci-dessous.
+          {beyondGuaranteedSize(tournament) && (
+            <p className="rounded-card border border-warning-line bg-warning-ground px-4 py-3 text-[13.5px] leading-relaxed">
+              Au-delà de {GUARANTEED_TEAMS} équipes, l&apos;application fonctionne mais sort du
+              domaine couvert par ses tests.
             </p>
-          ) : (
-            <ul className="divide-y divide-line-soft">
-              {tournament.teams.map((team) => (
-                <TeamRow
-                  key={team.id}
-                  team={team}
-                  issueOf={(name) => teamNameIssue(tournament, name, team.id)}
-                  onRename={(name) => {
-                    renameTeam(team.id, name);
-                  }}
-                  onRemove={() => {
-                    setToRemove(team);
-                  }}
-                />
-              ))}
-            </ul>
           )}
 
-          <div className="flex items-start gap-2 border-t border-line bg-ground px-4 py-3">
-            <span className="w-10 pt-2 text-right font-mono text-sm text-ink-faint">
-              {tournament.nextTeamId}
-            </span>
-            <div className="flex-1">
+          <div className="flex items-start gap-2.5">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="new-team" className="sr-only">
+                Nom de la nouvelle équipe
+              </label>
               <input
+                id="new-team"
                 ref={addField}
                 autoFocus
                 value={newName}
@@ -129,31 +128,60 @@ export default function Configuration({ tournament, nav }: ConfigurationProps) {
                   }
                 }}
                 placeholder="Nom de l'équipe, puis Entrée"
-                className="w-full rounded-panel border border-line bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                className="h-12 w-full rounded-panel border-[1.5px] border-accent bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
               />
-              {issue && <p className="mt-1 text-sm text-warning">{ISSUE_MESSAGES[issue]}</p>}
+              {issue && <p className="mt-1.5 text-sm text-warning">{ISSUE_MESSAGES[issue]}</p>}
             </div>
             <Button
               tone="primary"
+              className="h-12"
               disabled={issue !== null || newName.trim().length === 0}
               onClick={submitNewTeam}
             >
+              <IconPlus size={16} />
               Ajouter
             </Button>
           </div>
-        </div>
 
-        <SettingsPanel
-          tournament={tournament}
-          onMatchCountChange={setMatchCount}
-          onSettingChange={setSetting}
-        />
+          <div className="overflow-hidden rounded-card border border-line bg-surface">
+            {teamCount === 0 ? (
+              <p className="px-4 py-10 text-center text-ink-soft">
+                Aucune équipe. Ajoute la première ci-dessus.
+              </p>
+            ) : (
+              <ul>
+                {tournament.teams.map((team) => (
+                  <TeamRow
+                    key={team.id}
+                    team={team}
+                    issueOf={(name) => teamNameIssue(tournament, name, team.id)}
+                    onRename={(name) => {
+                      renameTeam(team.id, name);
+                    }}
+                    onRemove={() => {
+                      setToRemove(team);
+                    }}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+
+        <section className="flex min-w-0 flex-col gap-3">
+          <h2 className="font-display text-base font-semibold">Règles du tournoi</h2>
+          <SettingsPanel
+            tournament={tournament}
+            onMatchCountChange={setMatchCount}
+            onSettingChange={setSetting}
+          />
+        </section>
       </div>
 
       <Dialog
         open={toRemove !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+        onOpenChange={(value) => {
+          if (!value) {
             setToRemove(null);
           }
         }}

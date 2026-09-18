@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@/components/Button';
+import Rail, { RailBack, RailBrand } from '@/components/Rail';
 import Shell from '@/components/Shell';
 import StepNav from '@/components/StepNav';
 import { stepShown } from '@/domain/navigation';
@@ -52,14 +53,26 @@ export default function TournamentRoute() {
     }
   }, [id, current, list, open]);
 
+  const plainRail = (
+    <Rail>
+      <RailBrand />
+      <RailBack
+        onClick={() => {
+          void navigate('/');
+        }}
+      />
+    </Rail>
+  );
+
   if (!loading && id && !list.some((tournament) => tournament.id === id)) {
     return (
-      <Shell title="Tournoi introuvable">
+      <Shell rail={plainRail} title="Tournoi introuvable">
         <div className="mx-auto w-full max-w-3xl">
           <p className="text-ink-soft">
             Ce tournoi n&apos;existe plus, ou son fichier est illisible.
           </p>
           <Button
+            tone="primary"
             className="mt-4"
             onClick={() => {
               void navigate('/');
@@ -74,7 +87,7 @@ export default function TournamentRoute() {
 
   if (!current || current.id !== id) {
     return (
-      <Shell title="Tournoi">
+      <Shell rail={plainRail} title="Tournoi">
         <p className="text-ink-soft">Chargement…</p>
       </Shell>
     );

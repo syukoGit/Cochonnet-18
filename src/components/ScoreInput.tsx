@@ -9,15 +9,15 @@ const REASON_MESSAGES: Record<RejectionReason, string> = {
   'ended-earlier': 'La partie se serait arrêtée avant ce score.',
 };
 
+const FIELD =
+  'h-11 w-14 rounded-panel border text-center font-display text-[22px] font-bold tabular-nums transition-colors focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:opacity-50';
+
 interface ScoreInputProps {
   score: Score | undefined;
   minimumGap: number;
   disabled?: boolean;
   onCommit: (score: Score) => void;
 }
-
-const field =
-  'w-16 rounded-panel border bg-ground px-2 py-1.5 text-center tabular-nums focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:opacity-50';
 
 export default function ScoreInput({ score, minimumGap, disabled, onCommit }: ScoreInputProps) {
   const [home, setHome] = useState(score ? String(score[0]) : '');
@@ -38,8 +38,17 @@ export default function ScoreInput({ score, minimumGap, disabled, onCommit }: Sc
     }
   };
 
-  const borderOf = (filled: boolean) =>
-    reason !== null && filled ? 'border-warning' : 'border-line';
+  const fieldClass = (value: string) => {
+    if (reason !== null && both) {
+      return `${FIELD} border-warning bg-warning-ground text-warning`;
+    }
+
+    if (value.trim().length === 0) {
+      return `${FIELD} border-dashed border-line bg-surface text-ink-faint`;
+    }
+
+    return `${FIELD} border-line bg-sunken text-ink`;
+  };
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -59,9 +68,9 @@ export default function ScoreInput({ score, minimumGap, disabled, onCommit }: Sc
               commit();
             }
           }}
-          className={`${field} ${borderOf(both)}`}
+          className={fieldClass(home)}
         />
-        <span className="text-ink-faint">—</span>
+        <span className="h-0.5 w-2.5 rounded-full bg-line" />
         <input
           type="number"
           min={0}
@@ -78,7 +87,7 @@ export default function ScoreInput({ score, minimumGap, disabled, onCommit }: Sc
             }
           }}
           onBlur={commit}
-          className={`${field} ${borderOf(both)}`}
+          className={fieldClass(away)}
         />
       </div>
       {reason && <p className="text-xs text-warning">{REASON_MESSAGES[reason]}</p>}
