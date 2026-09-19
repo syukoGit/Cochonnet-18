@@ -154,6 +154,7 @@ export default function Phase1({ tournament, nav }: Phase1Props) {
             {playable.map((match) => (
               <MatchRow
                 key={match.id}
+                tournament={tournament.id}
                 match={match}
                 minimumGap={gap}
                 nameOf={nameOf}

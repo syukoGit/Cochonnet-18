@@ -1,11 +1,15 @@
 # Règles de Cochonnet-18
 
-**Version 1.5** — validée le 17 septembre 2026.
+**Version 1.6** — validée le 19 septembre 2026.
 
 Ce document est la spécification de référence du logiciel. Chaque règle numérotée
 correspond à un test du domaine (`src/domain/`). Toute modification d'une règle
 implique une modification du test correspondant, et inversement.
 
+> **Changements depuis 1.5** — le numéro d'une équipe accompagne son nom partout où
+> un match est présenté (R7.7) ; chaque match peut porter un chronomètre facultatif,
+> qui n'est ni une règle ni une donnée enregistrée (R7.8, §9).
+>
 > **Changements depuis 1.4** — annulation et rétablissement sortent du périmètre
 > (R6.7, R6.8, `I13` retirées, §9) ; les sauvegardes de rotation espacent leurs
 > instantanés d'un intervalle minimum, faute de quoi les dix ne couvriraient que
@@ -394,6 +398,18 @@ avec la raison du refus.
 avant la phase 2, déverrouiller un match, relancer un tirage — demande confirmation
 et annonce ses conséquences.
 
+**R7.7** — Le **numéro** d'une équipe est affiché à côté de son nom partout où un
+match est présenté, en phase 1 comme en phase 2. C'est l'identifiant stable de R1.2 :
+deux équipes peuvent porter des noms voisins, le numéro les sépare à l'annonce et
+sur la feuille de match.
+
+**R7.8** — Chaque match peut porter un **chronomètre facultatif**. L'organisateur le
+démarre et l'arrête à la main ; la saisie d'un résultat l'arrête aussi. Il ne
+conditionne rien : ni la validité d'un score (R2.4), ni le classement, ni un verrou,
+et son absence n'empêche aucune saisie. Il n'est **pas enregistré** — §6 ne le
+connaît pas — et disparaît à la fermeture de l'application. C'est un repère de suivi
+pour l'organisateur, pas une donnée du tournoi.
+
 ---
 
 ## 8. Invariants testables
@@ -453,7 +469,9 @@ Ces points ont été examinés et écartés. Les inscrire ici évite de les rouv
 inadvertance.
 
 - **Parties arrêtées au temps.** Toute partie va à son terme. R2.4 refuse un score
-  qui ne conclut pas une partie ; une équipe qui renonce relève du forfait.
+  qui ne conclut pas une partie ; une équipe qui renonce relève du forfait. Le
+  chronomètre de R7.8 ne rouvre pas ce point : il observe, il n'arrête rien, et
+  aucune règle ne lit sa valeur.
 - **Composition des équipes.** Une équipe est un nom (R1.2).
 - **Impression et export PDF.** Aucune sortie imprimable. L'affichage public (R7.3)
   couvre le besoin de diffusion.

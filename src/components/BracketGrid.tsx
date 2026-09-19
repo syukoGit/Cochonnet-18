@@ -11,20 +11,42 @@ import {
 } from '@/components/bracketLayout';
 import { IconMinus, IconPlus, IconRest } from '@/components/icons';
 import { roundLabel, slotLabel } from '@/components/labels';
+import TeamNumber from '@/components/TeamNumber';
+import { useElapsed } from '@/components/useElapsed';
 import { usePanZoom } from '@/components/usePanZoom';
 import type { TeamId } from '@/domain/ids';
 import { isReady, occupantsIn, winnerIn } from '@/domain/match/resolve';
 import { hasResult } from '@/domain/match/types';
 import type { Match } from '@/domain/match/types';
+import type { TournamentId } from '@/domain/tournament/types';
+import { useTimers } from '@/store/useTimers';
 
 interface BracketGridProps {
+  tournament: TournamentId;
   matches: Match[];
   allMatches: Match[];
   nameOf: (team: TeamId) => string;
   onSelect: (match: Match) => void;
 }
 
-export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: BracketGridProps) {
+function TimerBadge({ startedAt }: { startedAt: number }) {
+  const elapsed = useElapsed(startedAt);
+
+  return (
+    <span className="pointer-events-none absolute -top-2.5 right-2 rounded-full border border-warning-line bg-warning-ground px-2 py-0.5 font-display text-[11px] font-bold text-warning tabular-nums">
+      {elapsed}
+    </span>
+  );
+}
+
+export default function BracketGrid({
+  tournament,
+  matches,
+  allMatches,
+  nameOf,
+  onSelect,
+}: BracketGridProps) {
+  const startedAt = useTimers((state) => state.startedAt);
   const layout = useMemo(() => layoutBracket(matches), [matches]);
   const { viewport, view, dragging, fit, zoomIn, zoomOut, wasDragged, surface } = usePanZoom(
     layout.width,
@@ -47,50 +69,57 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
         ? 'border-2 border-accent'
         : 'border border-dashed border-line';
 
-    return (
-      <button
-        key={match.id}
-        type="button"
-        disabled={!open}
-        onClick={() => {
-          if (!wasDragged()) {
-            onSelect(match);
-          }
-        }}
-        style={{ left: x, top: y, width: CARD_WIDTH, height: CARD_HEIGHT }}
-        className={`absolute overflow-hidden rounded-card text-left transition-colors disabled:cursor-default ${border} ${third ? 'bg-ground shadow-[inset_3px_0_0_var(--c-jack)]' : 'bg-surface'} ${open ? 'hover:border-accent' : ''} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
-      >
-        {([0, 1] as const).map((index) => {
-          const occupant = occupantsIn(allMatches, match)[index];
-          const wins = occupant !== null && occupant === winner;
+    const running = startedAt[`${tournament}#${match.id}`] ?? null;
 
-          return (
-            <span
-              key={index}
-              className={`flex h-8.5 items-center justify-between gap-2 px-3 text-[13px] ${index === 0 ? 'border-b border-line-soft' : ''} ${wins ? 'bg-success-ground' : ''}`}
-            >
+    return (
+      <div key={match.id} style={{ left: x, top: y, width: CARD_WIDTH }} className="absolute">
+        {running !== null && <TimerBadge startedAt={running} />}
+        <button
+          type="button"
+          disabled={!open}
+          onClick={() => {
+            if (!wasDragged()) {
+              onSelect(match);
+            }
+          }}
+          style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+          className={`block overflow-hidden rounded-card text-left transition-colors disabled:cursor-default ${border} ${third ? 'bg-ground shadow-[inset_3px_0_0_var(--c-jack)]' : 'bg-surface'} ${open ? 'hover:border-accent' : ''} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
+        >
+          {([0, 1] as const).map((index) => {
+            const occupant = occupantsIn(allMatches, match)[index];
+            const wins = occupant !== null && occupant === winner;
+
+            return (
               <span
-                className={`truncate ${occupant === null ? 'text-ink-faint italic' : wins ? 'font-semibold' : 'text-ink-soft'}`}
+                key={index}
+                className={`flex h-8.5 items-center justify-between gap-2 px-3 text-[13px] ${index === 0 ? 'border-b border-line-soft' : ''} ${wins ? 'bg-success-ground' : ''}`}
               >
-                {slotLabel(allMatches, match, index, nameOf)}
-              </span>
-              {match.status === 'forfeit' ? (
-                <span className="shrink-0 text-[11px] font-semibold text-warning">
-                  {occupant !== null && occupant === match.forfeitBy ? 'forfait' : 'gagne'}
-                </span>
-              ) : (
-                match.score && (
+                <span className="flex min-w-0 items-baseline gap-1.5">
+                  {occupant !== null && <TeamNumber compact team={occupant} />}
                   <span
-                    className={`shrink-0 font-display text-[15px] font-bold tabular-nums ${wins ? 'text-success' : 'text-ink-faint'}`}
+                    className={`truncate ${occupant === null ? 'text-ink-faint italic' : wins ? 'font-semibold' : 'text-ink-soft'}`}
                   >
-                    {match.score[index]}
+                    {slotLabel(allMatches, match, index, nameOf)}
                   </span>
-                )
-              )}
-            </span>
-          );
-        })}
-      </button>
+                </span>
+                {match.status === 'forfeit' ? (
+                  <span className="shrink-0 text-[11px] font-semibold text-warning">
+                    {occupant !== null && occupant === match.forfeitBy ? 'forfait' : 'gagne'}
+                  </span>
+                ) : (
+                  match.score && (
+                    <span
+                      className={`shrink-0 font-display text-[15px] font-bold tabular-nums ${wins ? 'text-success' : 'text-ink-faint'}`}
+                    >
+                      {match.score[index]}
+                    </span>
+                  )
+                )}
+              </span>
+            );
+          })}
+        </button>
+      </div>
     );
   };
 
@@ -159,7 +188,8 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
             }}
             className="absolute flex items-center justify-between gap-2 rounded-full border border-dashed border-line bg-sunken px-2.5"
           >
-            <span className="truncate text-[13px] text-ink-soft">{nameOf(seat.team)}</span>
+            <TeamNumber compact team={seat.team} />
+            <span className="flex-1 truncate text-[13px] text-ink-soft">{nameOf(seat.team)}</span>
             <IconRest size={13} className="shrink-0 text-ink-faint" />
           </span>
         ))}

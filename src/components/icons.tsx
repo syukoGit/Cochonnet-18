@@ -136,3 +136,12 @@ export function IconRest(props: IconProps) {
     </svg>
   );
 }
+
+export function IconStopwatch(props: IconProps) {
+  return (
+    <svg {...frame(props)}>
+      <circle cx="8.5" cy="9.8" r="5.4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8.5 7.2v2.6l1.8 1.1M6.8 2.4h3.4M8.5 2.4v2M13 5.2l1 1" {...stroke} />
+    </svg>
+  );
+}

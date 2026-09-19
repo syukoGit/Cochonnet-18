@@ -18,6 +18,7 @@ import type { MatchId } from '@/domain/ids';
 import type { Score } from '@/domain/score/validity';
 import type { TeamId, Tournament, TournamentId } from '@/domain/tournament/types';
 import type { ExportOutcome, ImportOutcome, UnreadableTournament } from '@/env';
+import { useTimers } from '@/store/useTimers';
 
 const WRITE_DEBOUNCE_MS = 500;
 
@@ -85,6 +86,14 @@ function drawSeed(): number {
 
 type Setter = (recipe: (state: TournamentsState) => void) => void;
 type Getter = () => TournamentsState;
+
+function stopTimer(get: Getter, matchId: MatchId): void {
+  const current = get().current;
+
+  if (current) {
+    useTimers.getState().stop(current.id, matchId);
+  }
+}
 
 function applyToCurrent(
   set: Setter,
@@ -225,10 +234,12 @@ export const useTournaments = create<TournamentsState>()(
     },
 
     enterScore: (matchId, score) => {
+      stopTimer(get, matchId);
       applyToCurrent(set, get, (tournament) => enterScore(tournament, matchId, score, now()));
     },
 
     enterForfeit: (matchId, absent) => {
+      stopTimer(get, matchId);
       applyToCurrent(set, get, (tournament) => enterForfeit(tournament, matchId, absent, now()));
     },
 

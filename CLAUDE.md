@@ -300,6 +300,12 @@ Writes are **atomic** — temporary file then rename — on every mutation with 
 copy it nor back it up. Every save is validated against a **versioned Zod schema** with explicit migrations, and a
 file that fails validation is refused with a message rather than partially loaded (R6.5).
 
+**Not everything the organiser sees is saved.** The per-match stopwatch (R7.8) lives in its own store,
+[`src/store/useTimers.ts`](src/store/useTimers.ts), keyed by tournament and match, and never reaches the save file —
+it is a tracking aid, not tournament data, and §9 spells out that it does not reopen timed games. Keep it out of
+`Tournament`: a field there would have to enter the Zod schema, the migrations and every invariant, for something that
+is meaningless the moment the application closes.
+
 **There is no undo and no mutation journal** — R6.7, R6.8 and `I13` were withdrawn in `REGLES.md` 1.5, and §9 says
 why. Every correction already has its own explicit path, which names its consequences and asks for confirmation:
 clearing a result and its downstream (R4.11, R4.12), withdrawing or reinstating a team between the phases (R3.2),

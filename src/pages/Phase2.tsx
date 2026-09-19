@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import BracketGrid from '@/components/BracketGrid';
 import Button from '@/components/Button';
 import Dialog from '@/components/Dialog';
+import MatchTimer from '@/components/MatchTimer';
 import Rail, { RailBack, RailBrand, RailNote, RailTitle } from '@/components/Rail';
 import ScoreInput from '@/components/ScoreInput';
 import Shell from '@/components/Shell';
@@ -141,6 +142,7 @@ export default function Phase2({ tournament, nav }: Phase2Props) {
       )}
 
       <BracketGrid
+        tournament={tournament.id}
         matches={shown}
         allMatches={tournament.matches}
         nameOf={nameOf}
@@ -167,6 +169,10 @@ export default function Phase2({ tournament, nav }: Phase2Props) {
       >
         {match && !hasResult(match) && (
           <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3 rounded-panel bg-ground px-3 py-2">
+              <span className="text-[13px] text-ink-soft">Chronomètre du match, facultatif</span>
+              <MatchTimer tournament={tournament.id} match={match.id} />
+            </div>
             <ScoreInput
               score={undefined}
               minimumGap={gap}
