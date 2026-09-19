@@ -21,23 +21,6 @@ const stroke = {
   strokeLinejoin: 'round',
 } as const;
 
-export function IconBoules({ size = 26, className }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 26 26"
-      fill="none"
-      className={className}
-      aria-hidden
-    >
-      <circle cx="9" cy="14" r="6.2" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.5" cy="16.5" r="4.4" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="18" cy="7" r="2.6" className="fill-jack" />
-    </svg>
-  );
-}
-
 export function IconCheck(props: IconProps) {
   return (
     <svg {...frame(props)}>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { IconBack, IconBoules } from '@/components/icons';
+import { IconBack } from '@/components/icons';
 
 interface RailProps {
   children: ReactNode;
@@ -16,7 +16,12 @@ export default function Rail({ children }: RailProps) {
 export function RailBrand() {
   return (
     <div className="flex items-center gap-2.5 text-rail-soft">
-      <IconBoules size={24} />
+      <img
+        src="./logo-without-background.png"
+        alt=""
+        aria-hidden
+        className="size-9 shrink-0 object-contain"
+      />
       <span className="font-display text-xs font-bold tracking-[0.15em] text-rail-faint uppercase">
         Cochonnet 18
       </span>
