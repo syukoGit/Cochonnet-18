@@ -1,0 +1,6 @@
+*.md
+out
+release
+dist
+package-lock.json
+coverage

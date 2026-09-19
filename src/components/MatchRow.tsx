@@ -1,0 +1,84 @@
+import Button from '@/components/Button';
+import MatchTimer from '@/components/MatchTimer';
+import ScoreInput from '@/components/ScoreInput';
+import TeamNumber from '@/components/TeamNumber';
+import type { TeamId } from '@/domain/ids';
+import { winnerOf } from '@/domain/match/result';
+import { opponents } from '@/domain/match/types';
+import type { Match } from '@/domain/match/types';
+import type { Score } from '@/domain/score/validity';
+import type { TournamentId } from '@/domain/tournament/types';
+
+const MARK_TONES = {
+  waiting: 'bg-line',
+  played: 'bg-success',
+  forfeit: 'bg-warning',
+};
+
+interface MatchRowProps {
+  tournament: TournamentId;
+  match: Match;
+  minimumGap: number;
+  nameOf: (team: TeamId) => string;
+  onScore: (score: Score) => void;
+  onForfeit: () => void;
+  onClear: () => void;
+}
+
+export default function MatchRow({
+  tournament,
+  match,
+  minimumGap,
+  nameOf,
+  onScore,
+  onForfeit,
+  onClear,
+}: MatchRowProps) {
+  const [home, away] = opponents(match);
+  const winner = winnerOf(match);
+
+  const nameClass = (team: TeamId | undefined) =>
+    team !== undefined && team === winner ? 'truncate font-semibold' : 'truncate';
+
+  return (
+    <li className="flex min-h-14.5 shrink-0 items-center gap-3 rounded-card border border-line bg-surface px-3 py-2.5">
+      <span className={`h-7 w-1.5 shrink-0 rounded-full ${MARK_TONES[match.status]}`} />
+
+      <span className="flex min-w-0 flex-1 flex-col items-end gap-0.5">
+        <span className={`max-w-full ${nameClass(home)}`}>
+          {home === undefined ? '' : nameOf(home)}
+        </span>
+        {home !== undefined && <TeamNumber team={home} />}
+      </span>
+
+      {match.status === 'forfeit' ? (
+        <span className="max-w-40 shrink-0 truncate rounded-panel border border-warning-line bg-warning-ground px-3 py-1.5 text-xs font-semibold text-warning">
+          forfait de {match.forfeitBy === undefined ? '' : nameOf(match.forfeitBy)}
+        </span>
+      ) : (
+        <ScoreInput score={match.score} minimumGap={minimumGap} onCommit={onScore} />
+      )}
+
+      <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+        <span className={`max-w-full ${nameClass(away)}`}>
+          {away === undefined ? '' : nameOf(away)}
+        </span>
+        {away !== undefined && <TeamNumber team={away} />}
+      </span>
+
+      <span className="flex w-14 shrink-0 justify-center">
+        {match.status === 'waiting' && <MatchTimer tournament={tournament} match={match.id} />}
+      </span>
+
+      <span className="flex w-24 shrink-0 justify-end">
+        {match.status === 'waiting' ? (
+          <Button onClick={onForfeit}>Forfait</Button>
+        ) : (
+          <Button tone="danger" onClick={onClear}>
+            Effacer
+          </Button>
+        )}
+      </span>
+    </li>
+  );
+}

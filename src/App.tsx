@@ -1,37 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import EventConfig from './pages/EventConfig';
-import Phase1 from './pages/Phase1';
-import Phase2 from './pages/Phase2';
-import Results from './pages/Results';
-import AutoSaveProgress from './components/AutoSaveProgress';
-import NavigationButtons from './components/NavigationButtons';
-import { useRouteTracking } from './hooks/useRouteTracking';
-
-function AppComponent() {
-  useRouteTracking();
-
-  return (
-    <>
-      <NavigationButtons />
-      <div className="global-auto-save-progress">
-        <AutoSaveProgress size={60} strokeWidth={4} />
-      </div>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/config" element={<EventConfig />} />
-        <Route path="/phase1" element={<Phase1 />} />
-        <Route path="/phase2" element={<Phase2 />} />
-        <Route path="/results" element={<Results />} />
-      </Routes>
-    </>
-  );
-}
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Home from '@/pages/Home';
+import TournamentRoute from '@/pages/TournamentRoute';
 
 export default function App() {
   return (
-    <Router>
-      <AppComponent />
-    </Router>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/tournoi/:id" element={<TournamentRoute />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </HashRouter>
   );
 }

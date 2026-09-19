@@ -1,255 +1,257 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setMatchScore, setPhase2Groups } from '../store/eventSlice';
-import { computeRanking } from '../utils/ranking';
-import { splitPhase2Groups } from '../utils/phase2';
-import './Phase1.css';
+import Button from '@/components/Button';
+import Dialog from '@/components/Dialog';
+import MatchRow from '@/components/MatchRow';
+import Rail, { RailBack, RailBrand, RailNote, RailTitle } from '@/components/Rail';
+import RankingPanel from '@/components/RankingPanel';
+import SettingsPanel from '@/components/SettingsPanel';
+import Shell from '@/components/Shell';
+import { IconForward, IconRest, IconRules } from '@/components/icons';
+import type { TeamId } from '@/domain/ids';
+import { isBye, opponents } from '@/domain/match/types';
+import type { Match } from '@/domain/match/types';
+import { phase1SettingsLocked } from '@/domain/phase1/entry';
+import { enteredCount, phase1Complete, playableCount, rankTeams } from '@/domain/phase1/ranking';
+import { minimumGapFor } from '@/domain/tournament/settings';
+import type { Tournament } from '@/domain/tournament/types';
+import { useTournaments } from '@/store/useTournaments';
 
-function Phase1() {
-  const dispatch = useAppDispatch();
-  const { rounds, teams } = useAppSelector((state) => state.event);
-  const [activeRound, setActiveRound] = useState(0);
-  const navigate = useNavigate();
-
-  const ranking = useMemo(() => computeRanking(teams, rounds), [teams, rounds]);
-  const roundProgress = useMemo(
-    () =>
-      rounds.map((round) => {
-        const total = round.length;
-        const filled = round.filter(
-          (m) => m.scoreA !== undefined && m.scoreB !== undefined
-        ).length;
-        return total === 0 ? 0 : filled / total;
-      }),
-    [rounds]
-  );
-
-  const totalProgress = useMemo(() => {
-    const totals = rounds.reduce(
-      (acc, round) => {
-        acc.total += round.length;
-        acc.filled += round.filter(
-          (m) => m.scoreA !== undefined && m.scoreB !== undefined
-        ).length;
-        return acc;
-      },
-      { total: 0, filled: 0 }
-    );
-    return totals.total === 0 ? 0 : totals.filled / totals.total;
-  }, [rounds]);
-
-  const allCompleted = useMemo(
-    () =>
-      rounds.every((r) =>
-        r.every((m) => m.scoreA !== undefined && m.scoreB !== undefined)
-      ),
-    [rounds]
-  );
-
-  if (rounds.length === 0) {
-    return <div>Aucun tirage n'a été généré.</div>;
-  }
-
-  const handleScoreChange = (
-    roundIndex: number,
-    matchIndex: number,
-    field: 'scoreA' | 'scoreB',
-    value: string
-  ) => {
-    const parsed = value === '' ? undefined : Number(value);
-    const match = rounds[roundIndex][matchIndex];
-    const updatedA = field === 'scoreA' ? parsed : match.scoreA;
-    const updatedB = field === 'scoreB' ? parsed : match.scoreB;
-    dispatch(
-      setMatchScore({
-        roundIndex,
-        matchIndex,
-        scoreA: updatedA,
-        scoreB: updatedB,
-      })
-    );
-  };
-
-  const scoreClass = (
-    a: number | undefined,
-    b: number | undefined,
-    cell: 'A' | 'B'
-  ) => {
-    if (a === undefined || b === undefined) return '';
-    if (a === b) return '';
-    if ((cell === 'A' && a > b) || (cell === 'B' && b > a)) return 'winner';
-    return 'loser';
-  };
-
-  return (
-    <div className="phase1-wrapper">
-      <h1>Phase 1</h1>
-      <div className="phase1-content">
-        <div className="ranking-panel">
-          <h2>Classement</h2>
-          <div className="ranking-scroll">
-            <table className="ranking-table">
-              <thead>
-                <tr>
-                  <th>Classement</th>
-                  <th>Équipe</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  let currentRank = 0;
-                  let prevScore: number | undefined;
-                  return ranking.map((entry, idx) => {
-                    if (prevScore === undefined || entry.score !== prevScore) {
-                      currentRank = idx + 1;
-                      prevScore = entry.score;
-                    }
-                    // Find the team object to get ID
-                    const team = teams.find(t => t.name === entry.team);
-                    const displayName = team ? `${team.id} - ${team.name}` : entry.team;
-                    return (
-                      <tr key={entry.team}>
-                        <td>{currentRank}</td>
-                        <td>{displayName}</td>
-                        <td>{entry.score}</td>
-                      </tr>
-                    );
-                  });
-                })()}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="v-divider" aria-hidden="true" />
-        <div className="matches-panel">
-          <h2>Matchs</h2>
-          <div className="tabs">
-            {rounds.map((_, idx) => (
-              <button
-                type="button"
-                key={idx}
-                onClick={() => setActiveRound(idx)}
-                className={`${
-                  activeRound === idx ? 'active-tab' : ''
-                } round-button`}
-              >
-                Round {idx + 1}
-                <span className="progress-container">
-                  <span
-                    className="progress-bar"
-                    style={{ width: `${roundProgress[idx] * 100}%` }}
-                  />
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="match-table-container">
-            <table className="phase1-table">
-              <thead>
-                <tr>
-                  <th>Équipe 1</th>
-                  <th className="score-col">Score 1</th>
-                  <th className="score-col">Score 2</th>
-                  <th>Équipe 2</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rounds[activeRound].map((match, idx) => {
-                  // Find team objects to get IDs
-                  const teamA = teams.find(t => t.name === match.teamA);
-                  const teamB = teams.find(t => t.name === match.teamB);
-                  const displayTeamA = teamA ? `${teamA.id} - ${teamA.name}` : match.teamA;
-                  const displayTeamB = teamB ? `${teamB.id} - ${teamB.name}` : match.teamB;
-                  
-                  return (
-                    <tr key={idx}>
-                      <td>{displayTeamA}</td>
-                      <td
-                        className={`score-col ${scoreClass(
-                          match.scoreA,
-                          match.scoreB,
-                          'A'
-                        )}`}
-                      >
-                        <input
-                          className="score-input"
-                          type="number"
-                          min={0}
-                          title="Score équipe 1"
-                          value={match.scoreA ?? ''}
-                          onChange={(e) =>
-                            handleScoreChange(
-                              activeRound,
-                              idx,
-                              'scoreA',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-                      <td
-                        className={`score-col ${scoreClass(
-                          match.scoreA,
-                          match.scoreB,
-                          'B'
-                        )}`}
-                      >
-                        <input
-                          className="score-input"
-                          type="number"
-                          min={0}
-                          title="Score équipe 2"
-                          value={match.scoreB ?? ''}
-                          onChange={(e) =>
-                            handleScoreChange(
-                              activeRound,
-                              idx,
-                              'scoreB',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-                      <td>{displayTeamB}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <button
-        className="start-button"
-        type="button"
-        disabled={!allCompleted}
-        onClick={() => {
-          // Convert ranking team names back to team IDs
-          const rankedTeamIds = ranking.map(rankEntry => {
-            const team = teams.find(t => t.name === rankEntry.team);
-            if (!team) {
-              throw new Error(`Team not found for ranking entry: ${rankEntry.team}`);
-            }
-            return team.id;
-          });
-          
-          const { winners, consolation } = splitPhase2Groups(rankedTeamIds);
-          dispatch(setPhase2Groups({ winners, consolation }));
-          navigate('/phase2');
-        }}
-      >
-        Démarrer la phase 2
-        <span className="progress-container">
-          <span
-            className="progress-bar"
-            style={{ width: `${totalProgress * 100}%` }}
-          />
-        </span>
-      </button>
-    </div>
-  );
+interface Phase1Props {
+  tournament: Tournament;
+  nav: ReactNode;
 }
 
-export default Phase1;
+function roundsOf(matches: Match[]): number[] {
+  return [...new Set(matches.map((match) => match.round))].sort((a, b) => a - b);
+}
+
+export default function Phase1({ tournament, nav }: Phase1Props) {
+  const navigate = useNavigate();
+  const { enterScore, enterForfeit, clearEntry, setSetting, closePhase1 } = useTournaments();
+
+  const rounds = roundsOf(tournament.matches);
+  const [activeRound, setActiveRound] = useState(rounds[0] ?? 1);
+  const [forfeitFor, setForfeitFor] = useState<Match | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
+
+  const nameOf = (team: TeamId): string =>
+    tournament.teams.find((candidate) => candidate.id === team)?.name ?? `Équipe ${team}`;
+
+  const inRound = tournament.matches.filter((match) => match.round === activeRound);
+  const playable = inRound.filter((match) => !isBye(match));
+  const resting = inRound.filter(isBye).flatMap(opponents);
+
+  const locked = phase1SettingsLocked(tournament);
+  const entered = enteredCount(tournament.matches);
+  const total = playableCount(tournament.matches);
+  const gap = minimumGapFor(tournament.settings, 'phase1');
+  const remaining = total - entered;
+
+  const roundEntered = (round: number) =>
+    tournament.matches.filter(
+      (match) => match.round === round && !isBye(match) && match.status !== 'waiting'
+    ).length;
+  const roundTotal = (round: number) =>
+    tournament.matches.filter((match) => match.round === round && !isBye(match)).length;
+
+  const rail = (
+    <Rail>
+      <RailBrand />
+      <RailTitle
+        name={tournament.name}
+        meta={`${tournament.teams.length} équipes · ${tournament.matchCount} tours`}
+      />
+      {nav}
+      <RailNote title="Avancement">
+        <p className="font-display text-2xl leading-none font-bold tabular-nums">
+          {entered}
+          <span className="text-base font-medium text-rail-faint"> / {total}</span>
+        </p>
+        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-rail-line">
+          <div
+            className="h-full bg-success"
+            style={{ width: `${total === 0 ? 0 : (entered / total) * 100}%` }}
+          />
+        </div>
+      </RailNote>
+      <RailBack
+        onClick={() => {
+          void navigate('/');
+        }}
+      />
+    </Rail>
+  );
+
+  return (
+    <Shell
+      rail={rail}
+      eyebrow="Étape 2 sur 5"
+      title="Phase 1 — poules"
+      fill
+      actions={
+        <Button
+          onClick={() => {
+            setRulesOpen(true);
+          }}
+        >
+          <IconRules size={16} />
+          Règles
+        </Button>
+      }
+      footer={
+        <>
+          <p className="mr-auto text-sm text-ink-soft">
+            {phase1Complete(tournament) ? (
+              'Tous les matchs sont saisis.'
+            ) : (
+              <>
+                <strong className="font-semibold text-ink">
+                  {remaining} {remaining > 1 ? 'matchs restants' : 'match restant'}
+                </strong>{' '}
+                avant de pouvoir clôturer.
+              </>
+            )}
+          </p>
+          <Button tone="primary" disabled={!phase1Complete(tournament)} onClick={closePhase1}>
+            Clôturer la phase 1
+            <IconForward size={16} />
+          </Button>
+        </>
+      }
+    >
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <div className="flex min-h-0 flex-col gap-3">
+          <div role="tablist" aria-label="Tours" className="flex flex-wrap gap-1.5">
+            {rounds.map((round) => {
+              const done = roundEntered(round) === roundTotal(round);
+              const current = round === activeRound;
+
+              return (
+                <button
+                  key={round}
+                  type="button"
+                  role="tab"
+                  aria-selected={current}
+                  onClick={() => {
+                    setActiveRound(round);
+                  }}
+                  className={`flex min-h-10.5 items-center gap-2.5 rounded-panel border px-3.5 text-[14.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${current ? 'border-ink bg-ink text-ground' : 'border-line bg-surface hover:bg-sunken'}`}
+                >
+                  Tour {round}
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums ${current ? 'bg-white/20 text-ground' : done ? 'bg-success-ground text-success' : 'bg-sunken text-ink-soft'}`}
+                  >
+                    {roundEntered(round)}/{roundTotal(round)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+            {playable.map((match) => (
+              <MatchRow
+                key={match.id}
+                tournament={tournament.id}
+                match={match}
+                minimumGap={gap}
+                nameOf={nameOf}
+                onScore={(score) => {
+                  enterScore(match.id, score);
+                }}
+                onForfeit={() => {
+                  setForfeitFor(match);
+                }}
+                onClear={() => {
+                  clearEntry(match.id);
+                }}
+              />
+            ))}
+
+            {resting.length > 0 && (
+              <li className="flex min-h-13 shrink-0 items-center gap-2.5 rounded-card border border-dashed border-line bg-sunken px-4 text-sm">
+                <IconRest size={17} className="shrink-0 text-ink-faint" />
+                <span className="text-ink-soft">
+                  {resting.length > 1 ? 'Exemptées ce tour' : 'Exemptée ce tour'} —{' '}
+                  <strong className="font-semibold text-ink">
+                    {resting.map(nameOf).join(', ')}
+                  </strong>
+                  . Le crédit sera calculé à la clôture.
+                </span>
+              </li>
+            )}
+          </ul>
+        </div>
+
+        <RankingPanel ranking={rankTeams(tournament).entries} nameOf={nameOf} provisional />
+      </div>
+
+      <Dialog
+        open={rulesOpen}
+        onOpenChange={setRulesOpen}
+        title="Règles de la phase 1"
+        description={
+          locked
+            ? 'Un score a été saisi : les règles sont figées pour ne pas changer le classement rétroactivement.'
+            : 'Modifiables tant qu’aucun score n’est saisi.'
+        }
+        actions={
+          <Button
+            tone="primary"
+            onClick={() => {
+              setRulesOpen(false);
+            }}
+          >
+            Fermer
+          </Button>
+        }
+      >
+        <SettingsPanel
+          tournament={tournament}
+          disabled={locked}
+          includeMatchCount={false}
+          onMatchCountChange={() => undefined}
+          onSettingChange={setSetting}
+        />
+      </Dialog>
+
+      <Dialog
+        open={forfeitFor !== null}
+        onOpenChange={(value) => {
+          if (!value) {
+            setForfeitFor(null);
+          }
+        }}
+        title="Quelle équipe est absente ?"
+        description="Le forfait compte comme une victoire pour l’équipe présente, sans point marqué."
+        actions={
+          <Button
+            onClick={() => {
+              setForfeitFor(null);
+            }}
+          >
+            Annuler
+          </Button>
+        }
+      >
+        <div className="flex flex-col gap-2">
+          {forfeitFor &&
+            opponents(forfeitFor).map((team) => (
+              <Button
+                key={team}
+                className="min-h-13 justify-start"
+                onClick={() => {
+                  enterForfeit(forfeitFor.id, team);
+                  setForfeitFor(null);
+                }}
+              >
+                {nameOf(team)}
+              </Button>
+            ))}
+        </div>
+      </Dialog>
+    </Shell>
+  );
+}
