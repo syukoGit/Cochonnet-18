@@ -137,7 +137,7 @@ export default function Phase1({ tournament, nav }: Phase1Props) {
                   onClick={() => {
                     setActiveRound(round);
                   }}
-                  className={`flex min-h-[42px] items-center gap-2.5 rounded-panel border px-3.5 text-[14.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${current ? 'border-ink bg-ink text-ground' : 'border-line bg-surface hover:bg-sunken'}`}
+                  className={`flex min-h-10.5 items-center gap-2.5 rounded-panel border px-3.5 text-[14.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${current ? 'border-ink bg-ink text-ground' : 'border-line bg-surface hover:bg-sunken'}`}
                 >
                   Tour {round}
                   <span
@@ -170,7 +170,7 @@ export default function Phase1({ tournament, nav }: Phase1Props) {
             ))}
 
             {resting.length > 0 && (
-              <li className="flex min-h-[52px] items-center gap-2.5 rounded-card border border-dashed border-line bg-sunken px-4 text-sm">
+              <li className="flex min-h-13 shrink-0 items-center gap-2.5 rounded-card border border-dashed border-line bg-sunken px-4 text-sm">
                 <IconRest size={17} className="shrink-0 text-ink-faint" />
                 <span className="text-ink-soft">
                   {resting.length > 1 ? 'Exemptées ce tour' : 'Exemptée ce tour'} —{' '}
@@ -240,7 +240,7 @@ export default function Phase1({ tournament, nav }: Phase1Props) {
             opponents(forfeitFor).map((team) => (
               <Button
                 key={team}
-                className="min-h-[52px] justify-start"
+                className="min-h-13 justify-start"
                 onClick={() => {
                   enterForfeit(forfeitFor.id, team);
                   setForfeitFor(null);

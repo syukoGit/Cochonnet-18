@@ -191,7 +191,7 @@ export default function Home() {
             return (
               <li
                 key={tournament.id}
-                className="flex min-h-[84px] items-center gap-5 rounded-card border border-line bg-surface px-4 py-3"
+                className="flex min-h-21 items-center gap-5 rounded-card border border-line bg-surface px-4 py-3"
               >
                 <button
                   type="button"
@@ -209,7 +209,7 @@ export default function Home() {
                   </span>
                 </button>
 
-                <div className="hidden w-[152px] shrink-0 flex-col items-end gap-2 md:flex">
+                <div className="hidden w-38 shrink-0 flex-col items-end gap-2 md:flex">
                   <span className="text-xs font-medium text-ink-soft">{STEP_LABELS[step]}</span>
                   <span
                     className="flex gap-1"
@@ -219,7 +219,7 @@ export default function Home() {
                     {STEPS.map((one, index) => (
                       <span
                         key={one}
-                        className={`h-1.5 w-[18px] rounded-full ${index < reached ? 'bg-success' : index === reached ? 'bg-accent' : 'bg-line'}`}
+                        className={`h-1.5 w-4.5 rounded-full ${index < reached ? 'bg-success' : index === reached ? 'bg-accent' : 'bg-line'}`}
                       />
                     ))}
                   </span>

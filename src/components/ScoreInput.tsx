@@ -51,7 +51,7 @@ export default function ScoreInput({ score, minimumGap, disabled, onCommit }: Sc
   };
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex shrink-0 flex-col items-center gap-1.5">
       <div className="flex items-center gap-2">
         <input
           type="number"
@@ -90,7 +90,11 @@ export default function ScoreInput({ score, minimumGap, disabled, onCommit }: Sc
           className={fieldClass(away)}
         />
       </div>
-      {reason && <p className="text-xs text-warning">{REASON_MESSAGES[reason]}</p>}
+      {reason && (
+        <p className="max-w-54 text-center text-xs leading-snug text-balance text-warning">
+          {REASON_MESSAGES[reason]}
+        </p>
+      )}
     </div>
   );
 }

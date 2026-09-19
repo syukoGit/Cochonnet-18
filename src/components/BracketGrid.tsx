@@ -67,7 +67,7 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
           return (
             <span
               key={index}
-              className={`flex h-[34px] items-center justify-between gap-2 px-3 text-[13px] ${index === 0 ? 'border-b border-line-soft' : ''} ${wins ? 'bg-success-ground' : ''}`}
+              className={`flex h-8.5 items-center justify-between gap-2 px-3 text-[13px] ${index === 0 ? 'border-b border-line-soft' : ''} ${wins ? 'bg-success-ground' : ''}`}
             >
               <span
                 className={`truncate ${occupant === null ? 'text-ink-faint italic' : wins ? 'font-semibold' : 'text-ink-soft'}`}
@@ -142,7 +142,7 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
           <span
             key={column.round}
             style={{ left: column.x, top: -34, width: CARD_WIDTH }}
-            className="absolute font-display text-[11.5px] font-bold tracking-[0.1em] text-ink-faint uppercase"
+            className="absolute font-display text-[11.5px] font-bold tracking-widest text-ink-faint uppercase"
           >
             {roundLabel(column.round, layout.lastRound)}
           </span>
@@ -174,7 +174,7 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
                 top: layout.thirdPlace.y - 26,
                 width: CARD_WIDTH,
               }}
-              className="absolute text-center font-display text-[11.5px] font-bold tracking-[0.1em] text-warning uppercase"
+              className="absolute text-center font-display text-[11.5px] font-bold tracking-widest text-warning uppercase"
             >
               Petite finale
             </span>
@@ -188,11 +188,11 @@ export default function BracketGrid({ matches, allMatches, nameOf, onSelect }: B
         className="absolute bottom-3.5 left-3.5 flex items-center gap-3.5 rounded-full border border-line bg-surface/90 px-3 py-1.5 text-[11.5px] text-ink-soft"
       >
         <span className="flex items-center gap-2">
-          <span className="h-0 w-[18px] border-t-2 border-line" />
+          <span className="h-0 w-4.5 border-t-2 border-line" />
           vainqueur
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-0 w-[18px] border-t-2 border-dashed border-jack" />
+          <span className="h-0 w-4.5 border-t-2 border-dashed border-jack" />
           perdant
         </span>
       </div>

@@ -36,7 +36,7 @@ export default function MatchRow({
     team !== undefined && team === winner ? 'truncate font-semibold' : 'truncate';
 
   return (
-    <li className="flex min-h-[58px] items-center gap-3 rounded-card border border-line bg-surface py-2 pr-3 pl-3">
+    <li className="flex min-h-14.5 shrink-0 items-center gap-3 rounded-card border border-line bg-surface px-3 py-2.5">
       <span className={`h-7 w-1.5 shrink-0 rounded-full ${MARK_TONES[match.status]}`} />
 
       <span className={`flex-1 text-right ${nameClass(home)}`}>
